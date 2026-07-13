@@ -43,7 +43,7 @@
                     <i class="fa-solid fa-calendar-check text-2xl text-teal-300"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg md:text-xl font-bold tracking-wide">ระบบสคริปต์ตารางปฏิบัติราชการอัตโนมัติ</h1>
+                    <h1 class="text-lg md:text-xl font-bold tracking-wide">ระบบตารางปฏิบัติราชการและการสลับเวรอัจฉริยะ</h1>
                     <p class="text-xs text-teal-200/90 font-light mt-0.5">เชื่อมโยงตารางหมุนเวียน และสถิติการลากับ Google Sheets แบบเรียลไทม์</p>
                 </div>
             </div>
@@ -93,12 +93,42 @@
         <!-- DASHBOARD GRID LAYOUT -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- LEFT COLUMN: STATS & STAFF (3 cols) -->
+            <!-- LEFT COLUMN: STATS, CONNECTION & RULES (3 cols) -->
             <div class="lg:col-span-3 flex flex-col gap-6">
+                <!-- Database Sync Inspector Card -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                    <h2 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
+                        <span>สถานะเชื่อมต่อ Google Sheets</span>
+                        <span id="sync-status-dot" class="w-3 h-3 rounded-full bg-slate-300"></span>
+                    </h2>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="text-slate-500">การดึงข้อมูล:</span>
+                            <span id="sync-result-text" class="font-bold text-slate-700">กำลังรอการดึงข้อมูล...</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="text-slate-500">คอลัมน์ที่ตรวจพบ:</span>
+                            <span id="sync-detected-cols" class="font-medium text-slate-600 text-right text-[10px] break-all">-</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-100">
+                            <span class="text-slate-500">จำนวนวันลาที่พบ:</span>
+                            <span id="sync-records-count" class="font-bold text-teal-600">0 รายการ</span>
+                        </div>
+                    </div>
+                    <!-- Debugging Error Tips inside UI -->
+                    <div id="sync-debug-box" class="mt-3 p-3 bg-rose-50 border border-rose-100 text-rose-800 rounded-xl hidden text-[11px] leading-relaxed">
+                        <h4 class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ปัญหาที่พบบ่อย:</h4>
+                        <ol class="list-decimal pl-4 space-y-1">
+                            <li>กรุณาตั้งค่าแชร์ในแผ่นงาน Google Sheets ให้เป็น <strong>"ทุกคนที่มีลิงก์มีสิทธิ์อ่าน" (Anyone with the link can view)</strong></li>
+                            <li>หากตารางไม่มีข้อมูล ลองคลิกปุ่ม <strong>"ใช้ข้อมูลสมมุติเพื่อสาธิต"</strong> เพื่อดูรูปแบบที่ถูกต้อง</li>
+                        </ol>
+                    </div>
+                </div>
+
                 <!-- Staff Duty Counter Cards -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
                     <h2 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
-                        <span>ภาระงานเฉลี่ยรายบุคคล (เวร/วัน)</span>
+                        <span>ภาระงานรวมรายบุคคล (เวร/วัน)</span>
                         <span class="text-[10px] bg-slate-100 text-slate-500 font-normal px-2 py-0.5 rounded" id="stats-month-label">-</span>
                     </h2>
                     <div class="flex flex-col gap-3" id="staff-stats-container">
@@ -112,19 +142,19 @@
                     <ul class="text-xs space-y-2.5 text-slate-300">
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-arrow-right text-teal-400 mt-0.5 shrink-0"></i>
-                            <span><strong>สืบทอดตารางเวรข้ามเดือน:</strong> หากเดือนใหม่ไม่เริ่มในวันจันทร์ จะยืมชื่อของเดือนเก่ามาใช้จนกว่าจะถึงวันจันทร์แรก</span>
+                            <span><b>สืบทอดรหัสเวร:</b> หากเริ่มเดือนใหม่แล้วยังไม่ถึงวันจันทร์ จะใช้รหัสสลับเวรของเดือนก่อนหน้ามาจัดแทนก่อน</span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-arrow-right text-teal-400 mt-0.5 shrink-0"></i>
-                            <span><strong>วันคลินิก ARV (อังคาร & พฤหัสบดีที่สอง):</strong> เบิดขึ้นเวร ARV, NCD ไปทำหน้าที่เดิมเบิด, และ Rider ควบตำแหน่งเป็น <b class="text-teal-300">NCD+rider</b></span>
+                            <span><b>วันคลินิก ARV (อังคาร/พฤหัสบดีที่ 2):</b> เบิดทำหน้าที่ ARV, นำ NCD ไปแทนเบิด, และเปลี่ยน Rider เป็นควบ <b class="text-teal-300">NCD+rider</b></span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-arrow-right text-teal-400 mt-0.5 shrink-0"></i>
-                            <span><strong>ลา 1 คน:</strong> NCD ไปแทนผู้ลา, และ Rider ควบตำแหน่งเป็น <b class="text-teal-300">NCD+rider</b></span>
+                            <span><b>ลา 1 คน:</b> NCD ไปแทนงานคนลา, และเปลี่ยน Rider เป็นควบ <b class="text-teal-300">NCD+rider</b></span>
                         </li>
                         <li class="flex items-start gap-2">
                             <i class="fa-solid fa-arrow-right text-teal-400 mt-0.5 shrink-0"></i>
-                            <span><strong>ลา 2 คน:</strong> NCD แทนคนแรก, Rider แทนคนที่สอง (ตำแหน่ง NCD/Rider จะว่างลง)</span>
+                            <span><b>ลา 2 คน:</b> NCD แทนคนแรก, Rider แทนคนที่สอง (ตำแหน่ง NCD และ Rider ว่างลง)</span>
                         </li>
                     </ul>
                 </div>
@@ -176,6 +206,17 @@
                         </div>
                     </div>
 
+                    <!-- NEW: Manual Leave Toggles Section -->
+                    <div class="mb-5 bg-slate-50/70 border border-slate-100 rounded-xl p-3">
+                        <h3 class="text-[11px] font-bold text-slate-600 uppercase mb-2 flex items-center justify-between">
+                            <span><i class="fa-solid fa-user-pen mr-1 text-teal-600"></i> ติ๊กคนลาเพิ่มในวันนี้ (ไม่ต้องลงชีต)</span>
+                            <span class="text-[9px] text-slate-400 font-normal">จดจำอัตโนมัติ</span>
+                        </h3>
+                        <div class="grid grid-cols-3 gap-1.5" id="manual-leave-toggles">
+                            <!-- Dynamic Manual Toggles -->
+                        </div>
+                    </div>
+
                     <!-- Shift details container -->
                     <div class="flex-grow flex flex-col gap-2.5" id="detail-roles-list">
                         <!-- Dynamic list of positions and personnel -->
@@ -207,7 +248,7 @@
 
     <script>
         // ----------------- CONFIGURATION & CONSTANTS -----------------
-        // ลิงก์เริ่มต้น: รองรับทั้ง Google Sheet share link และ URL แบบ CSV pub
+        // ลิงก์ตารางงานจริงของคุณผู้ใช้จากแผ่นงาน Google Sheets
         const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/10euYdImtO7uMZlVK5MSwkU5kJKkBBi3Phuv5c2fMyMI/edit?usp=sharing";
 
         // รายชื่อเจ้าหน้าที่หลัก 6 คน
@@ -261,16 +302,19 @@
         // ----------------- STATE CONSTANTS -----------------
         let currentYear = 2026;
         let currentMonth = 7; // กรกฎาคม
-        let selectedDateStr = "2026-07-01";
+        let selectedDateStr = "2026-07-14"; // Default to July 14th for the requested test demonstration
         
-        // ข้อมูลการลา (DateStr -> List of Staff Names)
+        // ข้อมูลการลาที่ซิงค์เรียบร้อย (DateStr -> List of Staff Names)
         let leaveRecords = {};
+        
+        // ข้อมูลการลาที่ผู้ใช้งานติ๊กเพิ่มเติมด้วยตนเอง (DateStr -> List of Staff Names)
+        let manualLeaves = {};
 
         // ----------------- EVENT INITIALIZERS -----------------
         window.onload = function() {
             initMonthSelector();
             
-            // โหลดลิงก์เดิมที่เคยใช้
+            // โหลดลิงก์เดิมที่เคยบันทึกไว้ในเครื่อง
             let savedUrl = localStorage.getItem("duty_sheets_url");
             if (!savedUrl || savedUrl.trim() === "") {
                 savedUrl = DEFAULT_SHEET_URL;
@@ -278,11 +322,22 @@
             }
             document.getElementById("sheet-url-input").value = savedUrl;
 
-            // รันการซิงค์ข้อมูล Google Sheets ทันทีที่โหลด
+            // โหลดสิทธิ์การลาที่บันทึกไว้แบบกำหนดเอง
+            try {
+                const savedManual = localStorage.getItem("manual_leaves");
+                if (savedManual) {
+                    manualLeaves = JSON.parse(savedManual);
+                }
+            } catch(e) {
+                console.error("Error loading manual leaves:", e);
+                manualLeaves = {};
+            }
+
+            // รันการดึงข้อมูลทันทีเพื่อเชื่อมระบบวันลาแบบเรียลไทม์
             syncGoogleSheets();
         };
 
-        // สร้างตัวเลือกเดือนปีให้เลือกอย่างสวยงาม
+        // สร้างตัวเลือกเดือนปีแบบไดนามิก
         function initMonthSelector() {
             const select = document.getElementById("month-select");
             select.innerHTML = "";
@@ -307,20 +362,19 @@
             }
         }
 
-        // จัดการเมื่อเปลี่ยนเดือนผ่าน UI Dropdown
+        // จัดการเมื่อสลับเดือนในปฏิทิน
         function onMonthSelectChange() {
             const val = document.getElementById("month-select").value;
             const [y, m] = val.split("-").map(Number);
             currentYear = y;
             currentMonth = m;
             
-            // เลือกวันที่ 1 ของเดือนนั้นให้เป็นค่าเริ่มต้น
-            selectedDateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
+            selectedDateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-14`; // Keep it highlighted around mid-month
             updateCalendar();
             selectDate(selectedDateStr);
         }
 
-        // เปลี่ยนเดือนด้วยปุ่มลูกศร
+        // เปลี่ยนเดือนทีละ 1 ขั้น
         function changeMonth(dir) {
             const select = document.getElementById("month-select");
             let index = select.selectedIndex + dir;
@@ -330,7 +384,7 @@
             }
         }
 
-        // Toast Message UI
+        // แจ้งเตือน Toast UI
         function showToast(msg, isSuccess = true) {
             const toast = document.getElementById("toast");
             const toastIcon = document.getElementById("toast-icon");
@@ -350,13 +404,12 @@
         }
 
         // ----------------- AUTOMATIC URL CONVERTER -----------------
+        // แปลงลิงก์ Edit/Share ของ Google Sheets ให้เป็น CSV Export
         function getCsvExportUrl(url) {
             if (!url) return "";
             url = url.trim();
-            // หากเป็นรูปแบบ CSV ของ Google Sheets ที่เผยแพร่อยู่แล้ว ให้คืนค่าทันที
             if (url.includes("pub?output=csv")) return url;
             
-            // ตรวจจับการเชื่อมโยงจาก Google Sheet Link ทั่วไป
             const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
             if (match && match[1]) {
                 return `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv`;
@@ -364,24 +417,23 @@
             return url;
         }
 
-        // ----------------- SYNC GOOGLE SHEETS -----------------
+        // ----------------- SYNC GOOGLE SHEETS & DIAGNOSTICS -----------------
         function syncGoogleSheets() {
             const urlInput = document.getElementById("sheet-url-input").value;
             if (!urlInput) {
-                showToast("กรุณากรอกลิงก์ Google Sheets", false);
+                updateSyncUI("error", "ไม่มีลิงก์ต้นทาง", "-", 0, "กรุณากรอกลิงก์ Google Sheets");
                 return;
             }
 
             const convertedUrl = getCsvExportUrl(urlInput);
             localStorage.setItem("duty_sheets_url", urlInput);
 
-            // หมุนปุ่มไอคอนเพื่อบ่งบอกการทำงาน
             const icon = document.getElementById("sync-icon");
             icon.classList.add("fa-spin");
 
-            showToast("กำลังดึงข้อมูลปฏิทินวันลาล่าสุด...");
+            updateSyncUI("pending", "กำลังดึงข้อมูล...", "-", 0);
 
-            // ดึงไฟล์ CSV ผ่าน PapaParse
+            // ใช้ PapaParse ดาวน์โหลดข้อมูลเป็น CSV
             Papa.parse(convertedUrl, {
                 download: true,
                 header: true,
@@ -389,135 +441,346 @@
                 error: function(err) {
                     console.error("PapaParse Error:", err);
                     icon.classList.remove("fa-spin");
-                    showToast("ไม่สามารถเข้าถึงไฟล์ได้ กรุณาตรวจดูสิทธิ์แชร์ลิงก์เป็นสาธารณะ", false);
+                    updateSyncUI("error", "ไม่สามารถดาวน์โหลดได้", "ไม่มี", 0, "ระบบดึงข้อมูลไม่ได้เนื่องจากไม่ได้เปิดแชร์สิทธิ์เป็นสาธารณะ");
                 },
                 complete: function(results) {
                     icon.classList.remove("fa-spin");
-                    processLeaveCsvData(results.data);
-                    showToast("ดึงข้อมูลวันลาจาก Google Sheets สำเร็จ!");
+                    
+                    const rows = results.data;
+                    if (!rows || rows.length === 0) {
+                        updateSyncUI("error", "ตารางว่างเปล่า", "-", 0, "ไม่พบข้อมูลใน Google Sheets เลย");
+                        return;
+                    }
+
+                    // ป้องกันในกรณีที่ระบบถูกปฏิเสธสิทธิ์และได้รับหน้า HTML Login จาก Google แทน
+                    const firstCell = Object.keys(rows[0])[0] || "";
+                    if (firstCell.includes("<!DOCTYPE") || firstCell.includes("<html") || JSON.stringify(rows).includes("google-site-verification")) {
+                        updateSyncUI("error", "ติดรหัสผ่าน/ปฏิเสธสิทธิ์", "HTML Page", 0, "ลิงก์นี้ยังไม่ถูกตั้งค่าให้ 'ทุกคนที่มีลิงก์มีสิทธิ์อ่าน' กรุณาไปเปิดแชร์ใน Google Sheets");
+                        return;
+                    }
+
+                    // ประมวลผลและดึงวันลา
+                    const parseDetails = processLeaveCsvData(rows);
+                    
+                    if (parseDetails.success) {
+                        updateSyncUI(
+                            "success", 
+                            "เชื่อมต่อสำเร็จ", 
+                            parseDetails.detectedCols, 
+                            parseDetails.count
+                        );
+                        showToast(`เชื่อมต่อและนำเข้าวันลาสำเร็จ ${parseDetails.count} รายการ!`);
+                    } else {
+                        updateSyncUI(
+                            "error", 
+                            "ไม่พบหัวตารางที่ถูกต้อง", 
+                            parseDetails.detectedCols, 
+                            0, 
+                            "ระบบค้นหาคอลัมน์ไม่พบ กรุณาตั้งค่าตามคู่มือ"
+                        );
+                    }
+
                     updateCalendar();
                     selectDate(selectedDateStr);
                 }
             });
         }
 
-        // แปลงและประมวลผลตารางลาหยุดงาน
+        // อัปเดตข้อมูลกล่องวินิจฉัย Database บน UI
+        function updateSyncUI(status, resultText, detectedCols, count, debugMsg = "") {
+            const dot = document.getElementById("sync-status-dot");
+            const resultLabel = document.getElementById("sync-result-text");
+            const colsLabel = document.getElementById("sync-detected-cols");
+            const countLabel = document.getElementById("sync-records-count");
+            const debugBox = document.getElementById("sync-debug-box");
+
+            colsLabel.textContent = detectedCols;
+            countLabel.textContent = `${count} วัน`;
+
+            if (status === "success") {
+                dot.className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
+                resultLabel.className = "font-bold text-emerald-600";
+                resultLabel.textContent = resultText;
+                debugBox.classList.add("hidden");
+            } else if (status === "pending") {
+                dot.className = "w-3 h-3 rounded-full bg-amber-400 animate-bounce";
+                resultLabel.className = "font-bold text-amber-500";
+                resultLabel.textContent = resultText;
+                debugBox.classList.add("hidden");
+            } else {
+                dot.className = "w-3 h-3 rounded-full bg-rose-500";
+                resultLabel.className = "font-bold text-rose-600";
+                resultLabel.textContent = resultText;
+                
+                debugBox.classList.remove("hidden");
+                if (debugMsg) {
+                    showToast(debugMsg, false);
+                }
+            }
+        }
+
+        // ระบบประมวลผลข้อมูลการลาหยุด รองรับหัวคอลัมน์ตามภาพจริง (start, end, name, period)
         function processLeaveCsvData(rows) {
             leaveRecords = {};
-            if (!rows || rows.length === 0) return;
+            if (!rows || rows.length === 0) return { success: false, count: 0, detectedCols: "ไม่มี" };
 
-            // ค้นหาหัวตารางที่คาดว่าจะระบุ วันที่, ชื่อ, และช่วงเวลา (Period)
-            let dateKey = null;
+            let startKey = null;
+            let endKey = null;
             let nameKey = null;
             let periodKey = null;
 
-            // ตรวจหาหัวตารางโดยไม่ยึดติดกับภาษาหรือการเว้นวรรค
+            // ตรวจจับหัวคอลัมน์จากแถวแรกของไฟล์ชีต (Smart Dynamic Header Matcher)
             const sample = rows[0];
-            for (const key of Object.keys(sample)) {
-                const normalized = key.trim().toLowerCase();
-                if (normalized.includes("วัน") || normalized.includes("date")) {
-                    dateKey = key;
+            const keys = Object.keys(sample);
+
+            for (const key of keys) {
+                const norm = key.trim().toLowerCase();
+                
+                if (norm === "start" || norm === "วันเริ่ม" || norm.includes("เริ่ม") || norm === "start_date") {
+                    startKey = key;
                 }
-                if (normalized.includes("ชื่อ") || normalized.includes("name") || normalized.includes("staff")) {
+                if (norm === "end" || norm === "วันสิ้นสุด" || norm.includes("สิ้นสุด") || norm === "end_date") {
+                    endKey = key;
+                }
+                if (norm === "name" || norm === "ชื่อ" || norm.includes("ผู้ลา") || norm.includes("staff")) {
                     nameKey = key;
                 }
-                if (normalized.includes("period") || normalized.includes("เวลา") || normalized.includes("ช่วง")) {
+                if (norm === "period" || norm === "ช่วงเวลา" || norm.includes("เวลา") || norm === "type_period") {
                     periodKey = key;
                 }
             }
 
-            // หากไม่พบหัวตารางที่ชัดเจน ให้เดาจาก index ของ column ลำดับต้น ๆ
-            if (!dateKey) dateKey = Object.keys(sample)[0];
-            if (!nameKey) nameKey = Object.keys(sample)[1] || Object.keys(sample)[0];
-            if (!periodKey) periodKey = Object.keys(sample)[2] || Object.keys(sample)[0];
+            // Fallbacks ถ้าระบบหาแบบเป๊ะๆ ไม่พบ
+            if (!startKey) {
+                for (const key of keys) {
+                    const norm = key.trim().toLowerCase();
+                    if (norm.includes("วัน") || norm.includes("date")) { startKey = key; break; }
+                }
+                if (!startKey) startKey = keys[2] || keys[0];
+            }
+            if (!endKey) endKey = keys[3] || startKey;
+            if (!nameKey) nameKey = keys[1] || keys[0];
+            if (!periodKey) periodKey = keys[5] || keys[0];
 
+            let count = 0;
             rows.forEach(row => {
-                let rawDate = row[dateKey];
+                let rawStart = row[startKey];
+                let rawEnd = row[endKey] || rawStart;
                 let rawName = row[nameKey];
                 let rawPeriod = row[periodKey];
 
-                if (!rawDate || !rawName) return;
+                if (!rawStart || !rawName) return;
 
-                rawDate = rawDate.trim();
+                rawStart = rawStart.trim();
+                rawEnd = rawEnd.trim();
                 rawName = rawName.trim();
                 rawPeriod = rawPeriod ? rawPeriod.trim() : "เต็มวัน";
 
-                // ตรวจหาคำสำคัญในระบบพฤติกรรม "เต็มวัน" หรือ "เช้า"
-                const isValidPeriod = rawPeriod.includes("เต็มวัน") || rawPeriod.includes("เช้า") || rawPeriod.toLowerCase().includes("full") || rawPeriod.toLowerCase().includes("morning");
+                // ตรวจสอบคัดกรองเฉพาะ "เต็มวัน" หรือ "เช้า"
+                const normPeriod = rawPeriod.toLowerCase();
+                const isValidPeriod = normPeriod.includes("เต็มวัน") || 
+                                      normPeriod.includes("เช้า") || 
+                                      normPeriod.includes("full") || 
+                                      normPeriod.includes("morning");
                 if (!isValidPeriod) return;
 
-                // ตรวจหาชื่อบุคคลที่เกี่ยวข้องในการจัดสรรระบบ
+                // ตรวจจับชื่อเจ้าหน้าที่ 6 คน (รองรับการสะกดวรรณยุกต์ปนเป กิ๊ม/กิ้ม)
                 let staffName = null;
                 for (const name of ALL_STAFF) {
-                    if (rawName.includes(name)) {
+                    const normRaw = rawName.replace(/๊/g, '้').trim();
+                    const normSearch = name.replace(/๊/g, '้').trim();
+                    if (normRaw.includes(normSearch) || rawName.includes(name)) {
                         staffName = name;
                         break;
                     }
                 }
                 if (!staffName) return;
 
-                // ทำความเข้าใจฟอร์แมตของวันที่
-                let formattedDate = parseDateString(rawDate);
-                if (formattedDate) {
-                    if (!leaveRecords[formattedDate]) {
-                        leaveRecords[formattedDate] = [];
-                    }
-                    if (!leaveRecords[formattedDate].includes(staffName)) {
-                        leaveRecords[formattedDate].push(staffName);
-                    }
+                // แปลงและสแกนหากลุ่มวันที่ลาหยุด (แก้ไขบั๊ก Timezone Offset ด้วยฟังก์ชันแบบแมนนวลอย่างเสถียร)
+                let formattedStart = parseDateString(rawStart);
+                let formattedEnd = parseDateString(rawEnd) || formattedStart;
+
+                if (formattedStart) {
+                    let rangeDates = getDatesInRange(formattedStart, formattedEnd);
+                    rangeDates.forEach(dateStr => {
+                        if (!leaveRecords[dateStr]) {
+                            leaveRecords[dateStr] = [];
+                        }
+                        if (!leaveRecords[dateStr].includes(staffName)) {
+                            leaveRecords[dateStr].push(staffName);
+                            count++;
+                        }
+                    });
                 }
             });
+
+            return {
+                success: true,
+                count: count,
+                detectedCols: `เริ่ม: "${startKey}", สิ้นสุด: "${endKey}", ชื่อ: "${nameKey}", ช่วงเวลา: "${periodKey}"`
+            };
         }
 
-        // ตัวแปลงวันที่แบบยืดหยุ่นสูง เพื่อเลี่ยงบั๊กรูปแบบ ค.ศ. / พ.ศ. ของผู้ใช้
+        // คำนวณขอบเขตช่วงของวันลา (เริ่ม -> สิ้นสุด) - ฉบับแก้ไข Timezone Offset
+        function getDatesInRange(startDateStr, endDateStr) {
+            let dates = [];
+            const startParts = startDateStr.split("-").map(Number);
+            const endParts = endDateStr.split("-").map(Number);
+            
+            if (startParts.length !== 3 || endParts.length !== 3) return [];
+            
+            // สร้างวันขึ้นมาแบบอ้างอิงกับเขตเวลาของเครื่องผู้ใช้งานโดยตรงป้องกันการปัดวันล่วงหน้า/ย้อนหลัง
+            let start = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+            let end = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+            
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) return [];
+            
+            let current = new Date(start);
+            let safetyLimit = 0;
+            while (current <= end && safetyLimit < 40) {
+                let y = current.getFullYear();
+                let m = String(current.getMonth() + 1).padStart(2, '0');
+                let d = String(current.getDate()).padStart(2, '0');
+                dates.push(`${y}-${m}-${d}`);
+                current.setDate(current.getDate() + 1);
+                safetyLimit++;
+            }
+            return dates;
+        }
+
+        // ระบบวิเคราะห์ข้อมูลวันที่แบบครอบจักรวาล (Universal Date Parser)
         function parseDateString(str) {
+            if (!str) return null;
+            str = str.trim();
+            
+            // ลบเวลาส่วนท้ายออกถ้าตรวจพบ (เช่น 14/07/2026 12:00:00)
+            str = str.split(' ')[0].split('T')[0];
             str = str.replace(/\//g, "-");
-            const parts = str.split("-");
-            if (parts.length !== 3) return null;
 
-            let day = parseInt(parts[0], 10);
-            let month = parseInt(parts[1], 10);
-            let year = parseInt(parts[2], 10);
+            let parts = str.split("-");
+            if (parts.length === 3) {
+                let year, month, day;
+                if (parts[0].length === 4) { // YYYY-MM-DD
+                    year = parseInt(parts[0], 10);
+                    month = parseInt(parts[1], 10);
+                    day = parseInt(parts[2], 10);
+                } else { // DD-MM-YYYY
+                    day = parseInt(parts[0], 10);
+                    month = parseInt(parts[1], 10);
+                    year = parseInt(parts[2], 10);
+                }
 
-            // สลับในกรณีที่เป็นระบบ ปี-เดือน-วัน (ISO)
-            if (parts[0].length === 4) {
-                year = parseInt(parts[0], 10);
-                month = parseInt(parts[1], 10);
-                day = parseInt(parts[2], 10);
+                // สลับ พ.ศ. ของไทย เป็น ค.ศ.
+                if (year > 2500) year = year - 543;
+
+                // ตรวจจับปีแบบสองตัวเลขพุทธศักราช (เช่น 69 หรือ 70)
+                if (year < 100) {
+                    if (year >= 60 && year <= 80) year = year + 2500 - 543;
+                    else year = year + 2000;
+                }
+
+                if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                }
             }
 
-            // ป้องกันปีพุทธศักราช (พ.ศ.)
-            if (year > 2500) {
-                year = year - 543;
+            // แบบภาษาไทย (เช่น "1 ก.ค. 2569" หรือ "1 กรกฎาคม 2569")
+            let cleanStr = str.replace(/วัน[ก-๙]+ที่\s*/g, "").trim();
+            const thaiMonths = {
+                "ม.ค.": 1, "มกราคม": 1,
+                "ก.พ.": 2, "กุมภาพันธ์": 2,
+                "มี.ค.": 3, "มีนาคม": 3,
+                "เม.ย.": 4, "เมษายน": 4,
+                "พ.ค.": 5, "พฤษภาคม": 5,
+                "มิ.ย.": 6, "มิถุนายน": 6,
+                "ก.ค.": 7, "กรกฎาคม": 7,
+                "ส.ค.": 8, "สิงหาคม": 8,
+                "ก.ย.": 9, "กันยายน": 9,
+                "ต.ค.": 10, "ตุลาคม": 10,
+                "พ.ย.": 11, "พฤศจิกายน": 11,
+                "ธ.ค.": 12, "ธันวาคม": 12
+            };
+
+            let words = cleanStr.split(/\s+/);
+            if (words.length >= 3) {
+                let day = parseInt(words[0], 10);
+                let monthStr = words[1];
+                let year = parseInt(words[2], 10);
+
+                let month = thaiMonths[monthStr];
+                if (!month) {
+                    for (let key in thaiMonths) {
+                        if (monthStr.includes(key)) {
+                            month = thaiMonths[key];
+                            break;
+                        }
+                    }
+                }
+
+                if (year > 2500) year -= 543;
+                if (year < 100) year += 2000;
+
+                if (!isNaN(day) && month && !isNaN(year)) {
+                    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                }
             }
 
-            if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
-
-            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            return null;
         }
 
-        // ดึงข้อมูลทดสอบจำลองขึ้นมารันเวรทันที
+        // ----------------- MANUAL LEAVE TOGGLING SYSTEM -----------------
+        function toggleManualLeave(name) {
+            const dateStr = selectedDateStr;
+            if (!manualLeaves[dateStr]) {
+                manualLeaves[dateStr] = [];
+            }
+            
+            const idx = manualLeaves[dateStr].indexOf(name);
+            if (idx > -1) {
+                // หากติ๊กซ้ำ ให้ทำการยกเลิกวันลาหยุดแบบกำหนดเอง
+                manualLeaves[dateStr].splice(idx, 1);
+                showToast(`ยกเลิกสถานะลาเพิ่มของคุณ "${name}" ในวันนี้แล้ว`);
+            } else {
+                // ติ๊กเพื่อระบุวันลาหยุดเพิ่มเติม
+                manualLeaves[dateStr].push(name);
+                showToast(`ระบุการลาหยุดเพิ่มเติมสำหรับ "${name}" สำเร็จ!`);
+            }
+
+            // ลบอาเรย์ทิ้งหากวันนั้นไม่มีการลาแบบแมนนวลเหลืออยู่เลย
+            if (manualLeaves[dateStr].length === 0) {
+                delete manualLeaves[dateStr];
+            }
+
+            // บันทึกสถานะไว้ในหน่วยความจำของอุปกรณ์
+            localStorage.setItem("manual_leaves", JSON.stringify(manualLeaves));
+
+            // ปรับปรุงปฏิทินและกล่องสถิติรายวัน
+            updateCalendar();
+            selectDate(dateStr);
+        }
+
+        // ดึงข้อมูลทดสอบระบบแบบ sandbox
         function loadMockData() {
             leaveRecords = {
-                "2026-07-02": ["หลิว"], // วันที่ 2 กรกฎาคม ลา 1 คน
-                "2026-07-03": ["เบิด", "แอ๋ม"], // วันที่ 3 กรกฎาคม ลา 2 คน
-                "2026-07-09": ["แปง"], // วันพฤหัสบดีที่สองของเดือน (วัน ARV) และ มีลา 1 คน
-                "2026-07-14": ["เพ็ญ"] // วันอังคารที่สองของเดือน (วัน ARV) และ มีคนลา
+                "2026-07-02": ["หลิว"], // ลา 1 คน
+                "2026-07-03": ["เบิด", "แอ๋ม"], // ลา 2 คน
+                "2026-07-09": ["แปง"], // วันพฤหัสบดีที่สอง (มี ARV และ ลา 1 คน)
+                "2026-07-13": ["แปง", "กิ๊ม"],
+                "2026-07-14": ["แปง", "กิ๊ม"] // วันอังคารที่สอง (มี ARV และ ลา 2 คนพร้อมกัน เพื่อทดสอบความเสถียรของบั๊กทั้งหมด)
             };
-            showToast("สลับเปลี่ยนใช้ระบบจำลองข้อมูลวันลาเพื่อสาธิตเรียบร้อย!");
+            updateSyncUI("success", "ใช้ข้อมูลสมมุติสาธิต", "Mock Data", 7);
+            showToast("สลับเปลี่ยนใช้ระบบจำลองข้อมูลเพื่อสาธิตและตรวจสอบการจัดสรรเรียบร้อย!");
             updateCalendar();
             selectDate(selectedDateStr);
         }
 
         // ----------------- BUSINESS LOGIC ENGINE -----------------
-
-        // กฎหมุนเวียนสืบทอดผังเวรเมื่อยังไม่ผ่านวันจันทร์แรกของเดือน
+        // สืบทอดรหัสเวรรายเดือนข้ามสัปดาห์หากเดือนใหม่ไม่ได้เริ่มในวันจันทร์
         function getStaffMapForDate(dateStr) {
             const d = new Date(dateStr);
             const year = d.getFullYear();
             const month = d.getMonth() + 1;
 
-            // ค้นหาวันจันทร์แรกของเดือนที่กำลังแสดงผล
             const firstOfMonth = new Date(year, month - 1, 1);
             let firstMonday = 1;
             while (new Date(year, month - 1, firstMonday).getDay() !== 1) {
@@ -527,7 +790,6 @@
             const currentDay = d.getDate();
 
             if (currentDay < firstMonday) {
-                // หากวันดังกล่าวไม่ผ่านวันจันทร์แรก ให้ยืมตารางของเดือนก่อนหน้ามาใช้งาน
                 let prevMonth = month - 1;
                 let prevYear = year;
                 if (prevMonth === 0) {
@@ -550,7 +812,7 @@
             }
         }
 
-        // ตรวจสอบสถานะวันหยุดประจำสัปดาห์ / คลินิกพิเศษ ARV
+        // ตรวจสอบวันอังคารและพฤหัสบดีสัปดาห์ที่สองของเดือน (ARV Clinic)
         function isSecondTuesdayOrThursday(dateStr) {
             const d = new Date(dateStr);
             const dayOfWeek = d.getDay(); // 2 = อังคาร, 4 = พฤหัสบดี
@@ -558,7 +820,6 @@
             if (dayOfWeek !== 2 && dayOfWeek !== 4) return { isARV: false, type: "" };
 
             const dayOfMonth = d.getDate();
-            // การหารอบสัปดาห์ (สัปดาห์ที่ 2 จะอยู่ระหว่างวันที่ 8 - 14)
             const occurrence = Math.ceil(dayOfMonth / 7);
             
             if (occurrence === 2) {
@@ -570,7 +831,7 @@
             return { isARV: false, type: "" };
         }
 
-        // ฟังก์ชันหลักในการจัดสรรตารางงาน และคำนวณการสลับตัวแทน (CORE ENGINE)
+        // ระบบจัดสรรอัตโนมัติขั้นสูงสุด รองรับ ARV และ สิทธิ์การลา 1-2 คน แบบไม่มีสะดุดหรือสับสนตัวเอง
         function calculateDutiesForDate(dateStr) {
             const d = new Date(dateStr);
             const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
@@ -581,7 +842,7 @@
             if (isWeekend || holidayName) {
                 return {
                     isOff: true,
-                    reason: isWeekend ? "วันหยุดสุดสัปดาห์" : `วันหยุดนักขัตฤกษ์ (${holidayName})`,
+                    reason: isWeekend ? "วันหยุดสุดสัปดาห์" : `วันหยุดราชการ (${holidayName})`,
                     duties: {},
                     replacementLogs: [],
                     activeLeaves: []
@@ -596,17 +857,22 @@
                 return { isOff: true, reason: "ไม่มีตารางงานในระบบ", duties: {}, replacementLogs: [], activeLeaves: [] };
             }
 
-            // โครงสร้างตัวแทนปกติของวันนั้น
+            // 1. ตั้งค่าพื้นฐานตามรหัส
             const baseDuties = {};
             for (const [pos, letter] of Object.entries(dayShift)) {
                 baseDuties[pos] = staffMap[letter] || "ไม่มีผู้ปฏิบัติงาน";
             }
 
-            const leavesOnDate = leaveRecords[dateStr] || [];
+            // นำข้อมูลใบลาจาก Sheets มารวมเข้ากับ วันลาที่คุณติ๊กเพิ่มเองด้วยตนเอง (Manual Leaves)
+            const sheetLeaves = leaveRecords[dateStr] || [];
+            const manualLeavesOnDate = manualLeaves[dateStr] || [];
+            
+            // กรองหา Union List แบบกำจัดตัวซ้ำ
+            const leavesOnDate = Array.from(new Set([...sheetLeaves, ...manualLeavesOnDate]));
+
             const arvInfo = isSecondTuesdayOrThursday(dateStr);
             const replacementLogs = [];
 
-            // เก็บประวัติบุคคลและหน้าที่ของวันนั้น (Mutable States เพื่อสับเปลี่ยนเวร)
             let opd1 = baseDuties['OPD1'];
             let opd2 = baseDuties['OPD2'];
             let ipd = baseDuties['IPD'];
@@ -615,11 +881,14 @@
             let rider = baseDuties['rider'];
             let arv = null;
 
+            // สำรองรายชื่อพนักงานดั้งเดิมก่อนมีการโยกเวรลา
+            let primaryBackup = ncd;      // NCD (Primary Backup)
+            let secondaryBackup = rider;  // Rider (Secondary Backup)
+
             let ncdVacant = false;
             let riderVacant = false;
             let isRiderCombined = false;
 
-            // ค้นหาตำแหน่งของ "เบิด"
             const getBirdOriginalPosition = () => {
                 if (opd1 === "เบิด") return "OPD1";
                 if (opd2 === "เบิด") return "OPD2";
@@ -630,7 +899,7 @@
                 return null;
             };
 
-            // 1. นำระบบกฎคลินิก ARV ไปพิจารณาก่อนสิ่งอื่นใด
+            // 1. ตรวจสอบเงื่อนไข วันคลินิก ARV ก่อนสิ่งอื่นใด
             if (arvInfo.isARV) {
                 const birdPos = getBirdOriginalPosition();
                 const activeNcdUser = ncd;
@@ -639,9 +908,8 @@
                     if (birdPos === "NCD") {
                         arv = "เบิด";
                         ncdVacant = true;
-                        replacementLogs.push(`คลินิก ARV: "เบิด" ทำหน้าที่ ARV (เนื่องจากมีเวรหลักที่ NCD แล้ว)`);
+                        replacementLogs.push(`คลินิก ARV: "เบิด" ประจำตึก ARV (จากเดิมเวร NCD)`);
                     } else {
-                        // NCD ทำหน้าที่แทนเบิด
                         if (birdPos === "OPD1") opd1 = `${activeNcdUser} (แทนเบิด)`;
                         else if (birdPos === "OPD2") opd2 = `${activeNcdUser} (แทนเบิด)`;
                         else if (birdPos === "IPD") ipd = `${activeNcdUser} (แทนเบิด)`;
@@ -649,134 +917,177 @@
                         else if (birdPos === "rider") rider = `${activeNcdUser} (แทนเบิด)`;
 
                         arv = "เบิด";
-                        ncdVacant = true; // เคลื่อนย้าย NCD ไปแทน
-                        replacementLogs.push(`คลินิก ARV: "เบิด" ไปขึ้นเวร ARV, และโยก "${activeNcdUser}" (NCD) ไปแทนตำแหน่ง ${birdPos}`);
+                        ncdVacant = true;
+                        replacementLogs.push(`คลินิก ARV: "เบิด" ไปตึก ARV, โยก "${activeNcdUser}" (NCD) ไปแทนที่ ${birdPos}`);
                     }
                 } else {
                     arv = "เบิด (ขึ้นพิเศษ)";
-                    replacementLogs.push(`คลินิก ARV: "เบิด" มาทำ ARV (ไม่มีเวรประจำปกติในวันนี้)`);
+                    replacementLogs.push(`คลินิก ARV: "เบิด" เข้าทำคลินิกพิเศษ ARV`);
                 }
 
-                // ควบเวร NCD+rider
                 isRiderCombined = true;
-                replacementLogs.push(`คลินิก ARV: กำหนดให้ Rider ควบตำแหน่งปฏิบัติการเป็น "NCD+rider"`);
+                replacementLogs.push(`คลินิก ARV: ตำแหน่ง Rider ถูกเปลี่ยนเป็นควบ "NCD+rider"`);
             }
 
-            // 2. พิจารณากฎการลากลุ่มคนที่ถูกจดทะเบียน
-            // ตรวจสอบว่าผู้ที่ลานั้น เป็นผู้มีเวรปฏิบัติการในวันดังกล่าวจริงหรือไม่
+            // 2. ตรวจสอบและประมวลผลระบบสิทธิ์ใบลาหยุดประจำวัน (รวมกลุ่มคนที่มีส่วนร่วมในวันนั้น)
+            const assignedPeople = [opd1, opd2, ipd, verify, ncd, rider, arv];
             const activeLeaves = leavesOnDate.filter(name => {
-                return [opd1, opd2, ipd, verify, ncd, rider, arv].some(person => person && person.includes(name));
+                return assignedPeople.some(person => person && person.includes(name));
             });
 
-            if (activeLeaves.length === 1) {
-                const leaver = activeLeaves[0];
-                
-                // ค้นหาหน้าที่ผู้ลา
-                let leaverPos = null;
-                if (opd1 && opd1.includes(leaver)) leaverPos = "OPD1";
-                else if (opd2 && opd2.includes(leaver)) leaverPos = "OPD2";
-                else if (ipd && ipd.includes(leaver)) leaverPos = "IPD";
-                else if (verify && verify.includes(leaver)) leaverPos = "verify";
-                else if (ncd && ncd.includes(leaver) && !ncdVacant) leaverPos = "NCD";
-                else if (rider && rider.includes(leaver) && !riderVacant) leaverPos = "rider";
-                else if (arv && arv.includes(leaver)) leaverPos = "ARV";
+            if (activeLeaves.length > 0) {
+                // คัดกรองและแบ่งแยกว่ามีคนลาใน "ตำแหน่งเวรหลัก" (OPD, IPD, verify, ARV) กี่คน
+                let criticalLeavers = [];
+                if (opd1 && activeLeaves.some(l => opd1.includes(l))) criticalLeavers.push({ pos: 'OPD1', name: extractCleanName(opd1) });
+                if (opd2 && activeLeaves.some(l => opd2.includes(l))) criticalLeavers.push({ pos: 'OPD2', name: extractCleanName(opd2) });
+                if (ipd && activeLeaves.some(l => ipd.includes(l))) criticalLeavers.push({ pos: 'IPD', name: extractCleanName(ipd) });
+                if (verify && activeLeaves.some(l => verify.includes(l))) criticalLeavers.push({ pos: 'verify', name: extractCleanName(verify) });
+                if (arv && activeLeaves.some(l => arv.includes(l))) criticalLeavers.push({ pos: 'ARV', name: extractCleanName(arv) });
 
-                if (leaverPos) {
-                    const currentNcd = ncd;
+                // ตรวจสอบความพร้อมการมาทำงานของพนักงานสำรอง (NCD และ Rider)
+                const isNcdOnLeave = activeLeaves.includes(extractCleanName(primaryBackup));
+                const isRiderOnLeave = activeLeaves.includes(extractCleanName(secondaryBackup));
 
-                    if (leaverPos === "NCD") {
+                if (criticalLeavers.length === 1) {
+                    const leaver = criticalLeavers[0];
+                    if (!isNcdOnLeave) {
+                        // NCD ทำหน้าที่สับแทนตำแหน่งหลักที่ลาไป
+                        const replText = `${primaryBackup} (แทน${leaver.name}ที่ลา)`;
+                        if (leaver.pos === 'OPD1') opd1 = replText;
+                        else if (leaver.pos === 'OPD2') opd2 = replText;
+                        else if (leaver.pos === 'IPD') ipd = replText;
+                        else if (leaver.pos === 'verify') verify = replText;
+                        else if (leaver.pos === 'ARV') arv = replText;
+
                         ncdVacant = true;
                         isRiderCombined = true;
-                        replacementLogs.push(`ลา 1 คน: "${leaver}" (NCD) ลาหยุด -> Rider รับหน้าที่ควบเป็น "NCD+rider"`);
-                    } else if (leaverPos === "rider") {
-                        rider = `${currentNcd} (แทน${leaver}ที่ลา)`;
+                        replacementLogs.push(`ลา 1 คน: "${leaver.name}" (${leaver.pos}) ลาหยุด -> โยก "${primaryBackup}" (NCD) ไปสลับแทน และเปลี่ยน Rider เป็นควบ "NCD+rider"`);
+                    } else if (!isRiderOnLeave) {
+                        // กรณี NCD ลาหยุดเช่นกัน ให้ใช้ตัวสำรองขั้นสอง (Rider) ไปทำงานแทนเวรหลักที่ลา
+                        const replText = `${secondaryBackup} (แทน${leaver.name}ที่ลา)`;
+                        if (leaver.pos === 'OPD1') opd1 = replText;
+                        else if (leaver.pos === 'OPD2') opd2 = replText;
+                        else if (leaver.pos === 'IPD') ipd = replText;
+                        else if (leaver.pos === 'verify') verify = replText;
+                        else if (leaver.pos === 'ARV') arv = replText;
+
+                        riderVacant = true;
                         ncdVacant = true;
-                        replacementLogs.push(`ลา 1 คน: "${leaver}" (Rider) ลาหยุด -> ดึง "${currentNcd}" (NCD) ไปขับรถแทน`);
+                        replacementLogs.push(`ลา 1 คน: "${leaver.name}" (${leaver.pos}) ลาหยุด และ "${primaryBackup}" (NCD) ก็ลางาน -> โยก "${secondaryBackup}" (Rider) ไปช่วยแทน`);
                     } else {
-                        // NCD ไปทำแทนผู้ลา
-                        const replText = `${currentNcd} (แทน${leaver}ที่ลา)`;
-                        if (leaverPos === "OPD1") opd1 = replText;
-                        else if (leaverPos === "OPD2") opd2 = replText;
-                        else if (leaverPos === "IPD") ipd = replText;
-                        else if (leaverPos === "verify") verify = replText;
-                        else if (leaverPos === "ARV") arv = replText;
+                        // ไม่มีพนักงานสำรองเหลือเลย
+                        const replText = `ว่าง (ไม่มีผู้แทน - "${leaver.name}" ลา)`;
+                        if (leaver.pos === 'OPD1') opd1 = replText;
+                        else if (leaver.pos === 'OPD2') opd2 = replText;
+                        else if (leaver.pos === 'IPD') ipd = replText;
+                        else if (leaver.pos === 'verify') verify = replText;
+                        else if (leaver.pos === 'ARV') arv = replText;
+                        replacementLogs.push(`ลา 1 คน: "${leaver.name}" (${leaver.pos}) ลาหยุด แต่กำลังพลสำรองว่างทั้งหมด (เนื่องจากลาหยุดงาน)`);
+                    }
+                } 
+                else if (criticalLeavers.length >= 2) {
+                    const leaver1 = criticalLeavers[0];
+                    const leaver2 = criticalLeavers[1];
+
+                    if (!isNcdOnLeave && !isRiderOnLeave) {
+                        // มีใบลาหลัก 2 คน และสำรองทั้งสองไม่ลางานเลย
+                        const repl1 = `${primaryBackup} (แทน${leaver1.name}ที่ลา)`;
+                        const repl2 = `${secondaryBackup} (แทน${leaver2.name}ที่ลา)`;
+
+                        if (leaver1.pos === 'OPD1') opd1 = repl1;
+                        else if (leaver1.pos === 'OPD2') opd2 = repl1;
+                        else if (leaver1.pos === 'IPD') ipd = repl1;
+                        else if (leaver1.pos === 'verify') verify = repl1;
+                        else if (leaver1.pos === 'ARV') arv = repl1;
+
+                        if (leaver2.pos === 'OPD1') opd1 = repl2;
+                        else if (leaver2.pos === 'OPD2') opd2 = repl2;
+                        else if (leaver2.pos === 'IPD') ipd = repl2;
+                        else if (leaver2.pos === 'verify') verify = repl2;
+                        else if (leaver2.pos === 'ARV') arv = repl2;
 
                         ncdVacant = true;
-                        isRiderCombined = true; // คลุมงาน NCD ที่ว่าง
-                        replacementLogs.push(`ลา 1 คน: "${leaver}" (${leaverPos}) ลาหยุด -> โยก "${currentNcd}" (NCD) ทำงานแทน และ Rider ควบตำแหน่งเป็น "NCD+rider"`);
+                        riderVacant = true;
+                        replacementLogs.push(`ลา 2 คน: "${leaver1.name}" และ "${leaver2.name}" ลาหยุด -> ดึง "${primaryBackup}" (NCD) แทนคนแรก และ "${secondaryBackup}" (Rider) แทนคนที่สอง`);
+                    } 
+                    else if (!isNcdOnLeave) {
+                        // สำรองเหลือเพียง NCD คนเดียว
+                        const repl1 = `${primaryBackup} (แทน${leaver1.name}ที่ลา)`;
+                        if (leaver1.pos === 'OPD1') opd1 = repl1;
+                        else if (leaver1.pos === 'OPD2') opd2 = repl1;
+                        else if (leaver1.pos === 'IPD') ipd = repl1;
+                        else if (leaver1.pos === 'verify') verify = repl1;
+                        else if (leaver1.pos === 'ARV') arv = repl1;
+
+                        const repl2 = `ว่าง (ไม่มีผู้แทน - "${leaver2.name}" ลา)`;
+                        if (leaver2.pos === 'OPD1') opd1 = repl2;
+                        else if (leaver2.pos === 'OPD2') opd2 = repl2;
+                        else if (leaver2.pos === 'IPD') ipd = repl2;
+                        else if (leaver2.pos === 'verify') verify = repl2;
+                        else if (leaver2.pos === 'ARV') arv = repl2;
+
+                        ncdVacant = true;
+                        replacementLogs.push(`ลา 2 คน: สับเวรของ "${leaver1.name}" ด้วย "${primaryBackup}" (NCD) ส่วนตำแหน่งที่ลาของ "${leaver2.name}" ไม่มีคนแทนเนื่องจากคนล้นจำนวนพนักงาน`);
+                    }
+                    else if (!isRiderOnLeave) {
+                        // สำรองเหลือเพียง Rider คนเดียว
+                        const repl1 = `${secondaryBackup} (แทน${leaver1.name}ที่ลา)`;
+                        if (leaver1.pos === 'OPD1') opd1 = repl1;
+                        else if (leaver1.pos === 'OPD2') opd2 = repl1;
+                        else if (leaver1.pos === 'IPD') ipd = repl1;
+                        else if (leaver1.pos === 'verify') verify = repl1;
+                        else if (leaver1.pos === 'ARV') arv = repl1;
+
+                        const repl2 = `ว่าง (ไม่มีผู้แทน - "${leaver2.name}" ลา)`;
+                        if (leaver2.pos === 'OPD1') opd1 = repl2;
+                        else if (leaver2.pos === 'OPD2') opd2 = repl2;
+                        else if (leaver2.pos === 'IPD') ipd = repl2;
+                        else if (leaver2.pos === 'verify') verify = repl2;
+                        else if (leaver2.pos === 'ARV') arv = repl2;
+
+                        riderVacant = true;
+                        ncdVacant = true;
+                        replacementLogs.push(`ลา 2 คน: สับเวรของ "${leaver1.name}" ด้วย "${secondaryBackup}" (Rider) ส่วนตำแหน่งที่ลาของ "${leaver2.name}" ว่างเนื่องจากกำลังคนไม่เพียงพอ`);
+                    }
+                    else {
+                        // พนักงานสำรองหลักและสำรองสองลากันหมดเกลี้ยง
+                        replacementLogs.push(`เตือนกำลังคนวิกฤต: ผู้ปฏิบัติงานหลักลาและกำลังพลสำรองในตารางต่างลาพร้อมกัน`);
+                        criticalLeavers.forEach(cl => {
+                            const repl = `ว่าง (ไม่มีผู้แทน - "${cl.name}" ลา)`;
+                            if (cl.pos === 'OPD1') opd1 = repl;
+                            else if (cl.pos === 'OPD2') opd2 = repl;
+                            else if (cl.pos === 'IPD') ipd = repl;
+                            else if (cl.pos === 'verify') verify = repl;
+                            else if (cl.pos === 'ARV') arv = repl;
+                        });
                     }
                 }
-            } 
-            else if (activeLeaves.length >= 2) {
-                // ลา 2 คน (NCD แทนคนแรก, Rider แทนคนที่สอง)
-                const leaver1 = activeLeaves[0];
-                const leaver2 = activeLeaves[1];
 
-                const findLeaverPos = (name) => {
-                    if (opd1 && opd1.includes(name)) return "OPD1";
-                    if (opd2 && opd2.includes(name)) return "OPD2";
-                    if (ipd && ipd.includes(name)) return "IPD";
-                    if (verify && verify.includes(name)) return "verify";
-                    if (ncd && ncd.includes(name) && !ncdVacant) return "NCD";
-                    if (rider && rider.includes(name) && !riderVacant) return "rider";
-                    if (arv && arv.includes(name)) return "ARV";
-                    return null;
-                };
-
-                const pos1 = findLeaverPos(leaver1);
-                const pos2 = findLeaverPos(leaver2);
-
-                const originalNcd = ncd;
-                const originalRider = rider;
-
-                // คนแรก (NCD แทน)
-                if (pos1) {
-                    if (pos1 === "NCD") {
-                        ncdVacant = true;
-                        replacementLogs.push(`ลา 2 คน: คนแรกที่ลาคือ "${leaver1}" (NCD) ทำให้ตำแหน่งนี้ว่างลง`);
-                    } else {
-                        const txt = `${originalNcd} (แทน${leaver1}ที่ลา)`;
-                        if (pos1 === "OPD1") opd1 = txt;
-                        else if (pos1 === "OPD2") opd2 = txt;
-                        else if (pos1 === "IPD") ipd = txt;
-                        else if (pos1 === "verify") verify = txt;
-                        else if (pos1 === "ARV") arv = txt;
-                        else if (pos1 === "rider") { rider = txt; riderVacant = true; }
-                        ncdVacant = true;
-                        replacementLogs.push(`ลา 2 คน: ดึง "${originalNcd}" (NCD) ไปทำงานตำแหน่ง ${pos1} แทน "${leaver1}"`);
+                // สรุปสถานะความว่างงานและสิทธิ์ทดแทนสำหรับ NCD / Rider ที่เป็นคนลาเองโดยตรง
+                if (isNcdOnLeave) {
+                    ncdVacant = true;
+                    if (!activeLeaves.includes(extractCleanName(secondaryBackup)) && criticalLeavers.length === 0) {
+                        isRiderCombined = true;
+                        replacementLogs.push(`แจ้งบันทึกการลา: "${primaryBackup}" (NCD) ลาหยุดงาน -> ดึง Rider ควบงานแทนเป็น "NCD+rider"`);
                     }
                 }
-
-                // คนที่สอง (Rider แทน)
-                if (pos2) {
-                    if (pos2 === "rider") {
-                        riderVacant = true;
-                        replacementLogs.push(`ลา 2 คน: คนที่สองที่ลาคือ "${leaver2}" (Rider) ทำให้ตำแหน่งนี้ว่างลง`);
-                    } else {
-                        const txt = `${originalRider} (แทน${leaver2}ที่ลา)`;
-                        if (pos2 === "OPD1") opd1 = txt;
-                        else if (pos2 === "OPD2") opd2 = txt;
-                        else if (pos2 === "IPD") ipd = txt;
-                        else if (pos2 === "verify") verify = txt;
-                        else if (pos2 === "ARV") arv = txt;
-                        else if (pos2 === "NCD" && !ncdVacant) { ncd = txt; ncdVacant = true; }
-                        riderVacant = true;
-                        replacementLogs.push(`ลา 2 คน: ดึง "${originalRider}" (Rider) ไปทำงานตำแหน่ง ${pos2} แทน "${leaver2}"`);
-                    }
+                if (isRiderOnLeave) {
+                    riderVacant = true;
+                    replacementLogs.push(`แจ้งบันทึกการลา: "${secondaryBackup}" (Rider) ลาหยุดงาน`);
                 }
             }
 
-            // จัดหน้าการแสดงผลสุดท้ายในรูปแบบที่เข้าใจง่าย
+            // รวมตารางงานสรุปขั้นตอนสุดท้าย
             const finalDuties = { OPD1: opd1, OPD2: opd2, IPD: ipd, verify: verify };
             
             if (ncdVacant) {
-                finalDuties['NCD'] = "ว่าง (ไปสลับสิทธิ์แทนเวรอื่น)";
+                finalDuties['NCD'] = "ว่าง (ไปช่วยงานแทน/ลางาน)";
             } else {
                 finalDuties['NCD'] = ncd;
             }
 
             if (riderVacant) {
-                finalDuties['rider'] = "ว่าง (ไปสลับสิทธิ์แทนเวรอื่น)";
+                finalDuties['rider'] = "ว่าง (ไปช่วยงานแทน/ลางาน)";
             } else if (isRiderCombined) {
                 finalDuties['rider'] = `${rider} (NCD+rider)`;
             } else {
@@ -803,32 +1114,28 @@
             const grid = document.getElementById("calendar-grid");
             grid.innerHTML = "";
 
-            // อัปเดตหัวข้อและป้ายสถิติ
             const firstDateOfMonth = new Date(currentYear, currentMonth - 1, 1);
             document.getElementById("calendar-title-label").textContent = `ปฏิทินปฏิบัติงาน ประจำเดือน ${firstDateOfMonth.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}`;
             document.getElementById("stats-month-label").textContent = firstDateOfMonth.toLocaleDateString('th-TH', { month: 'short' });
 
-            // วันแรกของสัปดาห์ (0 = อาทิตย์, 1 = จันทร์)
             const startDayOfWeek = firstDateOfMonth.getDay();
             const totalDays = new Date(currentYear, currentMonth, 0).getDate();
 
-            // คืนค่าจำนวนวันหยุดราชการในเดือนนั้น
             let holidayCount = 0;
 
-            // 1. เพิ่มช่องว่างก่อนวันแรกของเดือน
+            // 1. เติมช่องว่างด้านหน้าสัปดาห์
             for (let i = 0; i < startDayOfWeek; i++) {
                 const empty = document.createElement("div");
                 empty.className = "bg-slate-50 border border-transparent min-h-[95px] rounded-2xl";
                 grid.appendChild(empty);
             }
 
-            // ตัวแปรเก็บจำนวนเวรรายคนในเดือนปัจจุบันเพื่อสถิติ
             const staffDutyStats = {};
             ALL_STAFF.forEach(name => {
                 staffDutyStats[name] = 0;
             });
 
-            // 2. สร้างเซลล์ปฏิทินในแต่ละวันราชการ
+            // 2. เติมวันจัดสรรลงเซลล์
             for (let day = 1; day <= totalDays; day++) {
                 const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const result = calculateDutiesForDate(dateStr);
@@ -841,7 +1148,6 @@
                 }`;
                 cell.onclick = () => selectDate(dateStr);
 
-                // ส่วนแสดงผลหัวเซลล์ (เลขวันที่ / ป้ายวันหยุด)
                 const header = document.createElement("div");
                 header.className = "flex justify-between items-start w-full";
                 
@@ -852,7 +1158,6 @@
                 dayNum.textContent = day;
                 header.appendChild(dayNum);
 
-                // หากเป็นวันหยุด
                 if (result.isOff) {
                     const statusBadge = document.createElement("span");
                     statusBadge.className = "text-[9px] px-1.5 py-0.5 rounded font-medium truncate max-w-[70px] " + 
@@ -860,10 +1165,9 @@
                             ? 'bg-rose-50 text-rose-600 border border-rose-100' 
                             : 'bg-slate-100 text-slate-400');
                     statusBadge.textContent = result.reason.includes("นักขัตฤกษ์") ? "วันหยุดพิเศษ" : "OFF";
-                    if (result.reason.includes("นักขัตฤกษ์")) holidayCount++;
+                    if (result.reason.includes("วันหยุดราชการ")) holidayCount++;
                     header.appendChild(statusBadge);
                 } else {
-                    // ป้ายบอกกรณีสืบทอดผังเวรข้ามเดือนแบบเหลื่อมสัปดาห์
                     if (result.staffMappingInfo.inherited) {
                         const inheritBadge = document.createElement("span");
                         inheritBadge.className = "text-[8px] bg-sky-50 text-sky-600 font-medium px-1 rounded-md"
@@ -872,7 +1176,6 @@
                         header.appendChild(inheritBadge);
                     }
 
-                    // ป้ายกรณีมีคลินิก ARV
                     if (result.arvInfo.isARV) {
                         const arvBadge = document.createElement("span");
                         arvBadge.className = "text-[8px] bg-violet-100 text-violet-700 font-bold px-1.5 py-0.5 rounded-full"
@@ -882,12 +1185,10 @@
                 }
                 cell.appendChild(header);
 
-                // รายละเอียดเวรในปฏิทินย่อส่วน
                 const body = document.createElement("div");
                 body.className = "mt-2 space-y-1 w-full text-[10px]";
 
                 if (!result.isOff) {
-                    // แสดงผลคนปฏิบัติงานแบบสรุป (ย่อเฉพาะตัวแทนตำแหน่งสำคัญ)
                     const opd1Staff = extractCleanName(result.duties['OPD1']);
                     const opd2Staff = extractCleanName(result.duties['OPD2']);
                     const ipdStaff = extractCleanName(result.duties['IPD']);
@@ -902,7 +1203,6 @@
                     ipdText.innerHTML = `<span>IPD:</span> <strong class="text-slate-700">${ipdStaff}</strong>`;
                     body.appendChild(ipdText);
 
-                    // เก็บประวัติค่าสถิติเพื่อสรุปผล
                     for (const [pos, person] of Object.entries(result.duties)) {
                         const cleanName = extractCleanName(person);
                         if (ALL_STAFF.includes(cleanName)) {
@@ -910,7 +1210,6 @@
                         }
                     }
 
-                    // ป้ายเตือนการลาหยุด
                     if (result.activeLeaves.length > 0) {
                         const leaveInfo = document.createElement("div");
                         leaveInfo.className = "text-[9px] text-rose-600 bg-rose-50 rounded px-1 mt-1 font-semibold truncate flex items-center gap-1";
@@ -920,7 +1219,7 @@
                 } else {
                     const offTip = document.createElement("div");
                     offTip.className = "text-slate-400 text-center py-1.5 italic text-[10px]";
-                    offTip.textContent = result.reason.includes("นักขัตฤกษ์") ? "วันหยุดราชการ" : "-";
+                    offTip.textContent = result.reason.includes("วันหยุดราชการ") ? "วันหยุดราชการ" : "-";
                     body.appendChild(offTip);
                 }
 
@@ -928,12 +1227,10 @@
                 grid.appendChild(cell);
             }
 
-            // แสดงผลป้ายสถิติ
             document.getElementById("holiday-count-badge").textContent = `${holidayCount} วันหยุดราชการในเดือนนี้`;
             renderStaffStats(staffDutyStats);
         }
 
-        // ตัวแยกแยะและกรองชื่อตัดเงื่อนไขเพื่อใช้จัดสรรเวร
         function extractCleanName(str) {
             if (!str) return "";
             for (const name of ALL_STAFF) {
@@ -976,23 +1273,17 @@
             selectedDateStr = dateStr;
             const d = new Date(dateStr);
             
-            // อัปเดตไฮไลท์เซลล์บนปฏิทินที่เลือก
-            const cells = document.getElementById("calendar-grid").children;
-            const selectDayNum = d.getDate();
             const firstDateOfMonth = new Date(currentYear, currentMonth - 1, 1);
             const startOffset = firstDateOfMonth.getDay();
+            const selectDayNum = d.getDate();
 
-            // เคลียร์กรอบไฮไลท์เดิม
             updateCalendarHighlight(selectDayNum, startOffset);
 
-            // คำนวณเวรของวันนั้น
             const result = calculateDutiesForDate(dateStr);
 
-            // แสดงหัวข้อวันที่
             document.getElementById("detail-weekday").textContent = d.toLocaleDateString('th-TH', { weekday: 'long' });
             document.getElementById("detail-date").textContent = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
 
-            // ส่วนงานลาหยุดงาน
             const leaveBlock = document.getElementById("detail-leaves-block");
             const leaveContainer = document.getElementById("detail-leaves-container");
             
@@ -1009,7 +1300,36 @@
                 leaveBlock.classList.add("hidden");
             }
 
-            // แสดงผลรายการตำแหน่งเวรของวันนั้น
+            // --- NEW: Render Manual Leave Toggles inside Daily Inspector panel ---
+            const manualContainer = document.getElementById("manual-leave-toggles");
+            manualContainer.innerHTML = "";
+            
+            ALL_STAFF.forEach(name => {
+                const isSheetLeave = leaveRecords[dateStr] && leaveRecords[dateStr].includes(name);
+                const isManualLeave = manualLeaves[dateStr] && manualLeaves[dateStr].includes(name);
+                
+                const btn = document.createElement("button");
+                btn.type = "button";
+                
+                if (isSheetLeave) {
+                    // หากลาหยุดจากระบบ Sheets แล้ว ให้ล็อกสถานะและห้ามกดยกเลิก
+                    btn.className = "py-1.5 px-1 bg-rose-100 text-rose-800 border border-rose-200 rounded-lg text-[10px] font-bold cursor-not-allowed opacity-80 flex flex-col items-center justify-center";
+                    btn.disabled = true;
+                    btn.innerHTML = `<span>${name}</span><span class="text-[8px] font-normal text-rose-600/80">(จากชีต)</span>`;
+                } else if (isManualLeave) {
+                    // หากลาแบบแมนนวล ให้แสดงเป็นปุ่มสีเหลืองพร้อมคลิกยกเลิกสถานะได้
+                    btn.className = "py-1.5 px-1 bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 rounded-lg text-[10px] font-bold flex flex-col items-center justify-center transition-all shadow-sm";
+                    btn.onclick = () => toggleManualLeave(name);
+                    btn.innerHTML = `<span>${name}</span><span class="text-[8px] font-light"><i class="fa-solid fa-circle-minus"></i> ลาเพิ่ม</span>`;
+                } else {
+                    // สถานะปฏิบัติงานปกติ
+                    btn.className = "py-1.5 px-1 bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 rounded-lg text-[10px] font-semibold flex flex-col items-center justify-center transition-all";
+                    btn.onclick = () => toggleManualLeave(name);
+                    btn.innerHTML = `<span>${name}</span><span class="text-[8px] text-slate-400">ปกติ</span>`;
+                }
+                manualContainer.appendChild(btn);
+            });
+
             const listContainer = document.getElementById("detail-roles-list");
             listContainer.innerHTML = "";
 
@@ -1021,15 +1341,12 @@
                     <span>พักผ่อนวันหยุด: ${result.reason}</span>
                 `;
                 listContainer.appendChild(offBox);
-                
-                // ล้างกล่องประวัติ
                 document.getElementById("detail-logs-block").classList.add("hidden");
                 return;
             }
 
             document.getElementById("detail-logs-block").classList.remove("hidden");
 
-            // ตำแหน่งทั้งหมดที่จะนำมาแสดงเรียงตามลำดับความคุ้นเคย
             const roleOrder = ['OPD1', 'OPD2', 'IPD', 'verify', 'NCD', 'rider', 'ARV'];
 
             roleOrder.forEach(role => {
@@ -1074,7 +1391,6 @@
                 listContainer.appendChild(row);
             });
 
-            // เพิ่มประวัติขั้นตอนการประมวลผลและการปรับเปลี่ยนของวันนั้น
             const logsContainer = document.getElementById("detail-logs-container");
             logsContainer.innerHTML = "";
 
@@ -1093,7 +1409,6 @@
             }
         }
 
-        // อัปเดตไฮไลท์บนปฏิทินที่เลือก
         function updateCalendarHighlight(selectedDay, startOffset) {
             const grid = document.getElementById("calendar-grid");
             const cells = grid.children;
@@ -1101,7 +1416,7 @@
 
             for (let i = 0; i < cells.length; i++) {
                 const cell = cells[i];
-                if (cell.classList.contains("bg-slate-50")) continue; // ข้ามช่องเปล่า
+                if (cell.classList.contains("bg-slate-50")) continue;
 
                 if (i === targetIndex) {
                     cell.className = "min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative border-teal-600 ring-2 ring-teal-500/20 bg-teal-50/10";
@@ -1116,16 +1431,14 @@
             const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
             const csvRows = [];
 
-            // หัวตารางของ Google Calendar Import Schema
             csvRows.push(["Subject", "Start Date", "Description", "All Day Event"]);
 
             for (let d = 1; d <= daysInMonth; d++) {
                 const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const result = calculateDutiesForDate(dateStr);
 
-                if (result.isOff) continue; // ข้ามวันเสาร์-อาทิตย์ และวันหยุดพิเศษ
+                if (result.isOff) continue;
 
-                // รายละเอียดเวรทั้งหมดในวันนั้น
                 const dutyDetails = [];
                 for (const [role, name] of Object.entries(result.duties)) {
                     dutyDetails.push(`${role}: ${name}`);
@@ -1133,7 +1446,6 @@
 
                 const desc = `ตารางงานประจำวัน: ${dutyDetails.join(", ")}`;
 
-                // ส่งออกแยกแต่ละตำแหน่งเวรลงปฏิทินแบบละเอียด
                 for (const [role, name] of Object.entries(result.duties)) {
                     const cleanName = extractCleanName(name);
                     if (ALL_STAFF.includes(cleanName)) {
@@ -1147,7 +1459,6 @@
                 }
             }
 
-            // แปลงและส่งไฟล์ออกให้ดาวน์โหลดทันที
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
             csvRows.forEach(row => {
                 const rowStr = row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",");
