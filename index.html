@@ -35,28 +35,28 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- HEADER & STATUS BAR -->
-    <header class="bg-gradient-to-r from-teal-800 to-cyan-900 text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-teal-800 to-cyan-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex items-center gap-3">
                 <div class="p-2.5 bg-white/10 rounded-xl backdrop-blur-md">
                     <i class="fa-solid fa-calendar-check text-2xl text-teal-300"></i>
                 </div>
                 <div>
                     <h1 class="text-lg md:text-xl font-bold tracking-wide">ระบบตารางปฏิบัติราชการและการสลับเวรอัจฉริยะ</h1>
-                    <p class="text-xs text-teal-200/90 font-light mt-0.5">เชื่อมโยงตารางหมุนเวียน และสถิติการลากับ Google Sheets แบบเรียลไทม์</p>
+                    <p class="text-xs text-teal-200/90 font-light mt-0.5">ระบบคำนวณและสลับตำแหน่งหมุนเวียนเวรตามมาตรฐานปฏิบัติงาน</p>
                 </div>
             </div>
             
-            <!-- Connection & Sync Controls -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <input type="text" id="sheet-url-input" 
-                       placeholder="วางลิงก์ Google Sheets ตรงนี้..." 
-                       class="bg-white/15 border border-white/20 text-white placeholder-teal-100/50 text-xs rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white/20 w-full sm:w-72 transition-all">
-                <button onclick="syncGoogleSheets()" 
-                        class="bg-teal-500 hover:bg-teal-400 active:bg-teal-600 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5 shrink-0">
-                    <i class="fa-solid fa-sync" id="sync-icon"></i> ดึงข้อมูลตารางลา
-                </button>
+            <!-- Hidden connection controls to satisfy JS but hide from UI per images -->
+            <div class="hidden">
+                <input type="text" id="sheet-url-input" value="https://docs.google.com/spreadsheets/d/10euYdImtO7uMZlVK5MSwkU5kJKkBBi3Phuv5c2fMyMI/edit?usp=sharing">
+                <button onclick="syncGoogleSheets()" id="sync-icon-parent"><i class="fa-solid fa-sync" id="sync-icon"></i></button>
+                <div id="sync-status-dot"></div>
+                <div id="sync-result-text"></div>
+                <div id="sync-detected-cols"></div>
+                <div id="sync-records-count"></div>
+                <div id="sync-debug-box"></div>
             </div>
         </div>
     </header>
@@ -79,123 +79,74 @@
                 </button>
             </div>
 
-            <!-- Global Quick Controls -->
-            <div class="flex items-center gap-2 flex-wrap">
-                <button onclick="exportToCSV()" class="bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-file-export"></i> ส่งออกตารางงาน (CSV)
-                </button>
-                <button onclick="loadMockData()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium px-3 py-2.5 rounded-xl text-xs transition-all border border-amber-200/60 flex items-center gap-1">
-                    <i class="fa-solid fa-vial"></i> ใช้ข้อมูลสมมุติเพื่อสาธิต
-                </button>
+            <!-- Hidden action buttons and indicator to keep UI extremely clean per request -->
+            <div class="hidden">
+                <button onclick="exportToCSV()"></button>
+                <button onclick="loadMockData()"></button>
+                <!-- Hidden Connection indicator (image_456039.png) -->
+                <div id="connection-status-badge">เชื่อมต่อฐานข้อมูล Google Sheets เรียลไทม์</div>
             </div>
         </div>
 
-        <!-- DASHBOARD GRID LAYOUT -->
+        <!-- DASHBOARD GRID LAYOUT (Optimized to 2 columns: Calendar on left, Daily detail on right) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- LEFT COLUMN: STATS, CONNECTION & RULES (3 cols) -->
-            <div class="lg:col-span-3 flex flex-col gap-6">
-                <!-- Database Sync Inspector Card -->
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                    <h2 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
-                        <span>สถานะเชื่อมต่อ Google Sheets</span>
-                        <span id="sync-status-dot" class="w-3 h-3 rounded-full bg-slate-300"></span>
-                    </h2>
-                    <div class="space-y-2 text-xs">
-                        <div class="flex justify-between py-1 border-b border-slate-100">
-                            <span class="text-slate-500">การดึงข้อมูล:</span>
-                            <span id="sync-result-text" class="font-bold text-slate-700">กำลังรอการดึงข้อมูล...</span>
-                        </div>
-                        <div class="flex justify-between py-1 border-b border-slate-100">
-                            <span class="text-slate-500">คอลัมน์ที่ตรวจพบ:</span>
-                            <span id="sync-detected-cols" class="font-medium text-slate-600 text-right text-[10px] break-all">-</span>
-                        </div>
-                        <div class="flex justify-between py-1 border-b border-slate-100">
-                            <span class="text-slate-500">จำนวนวันลาที่พบ:</span>
-                            <span id="sync-records-count" class="font-bold text-teal-600">0 รายการ</span>
-                        </div>
+            <!-- LEFT COLUMN: HORIZONTAL TOGGLES & CALENDAR GRID (8 cols) -->
+            <div class="lg:col-span-8 flex flex-col gap-5">
+                
+                <!-- NEW LOCATION: Horizontal Manual Leave Toggles Section -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-3">
+                        <h3 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                            <i class="fa-solid fa-user-pen text-teal-600 text-sm"></i>
+                            <span>ติ๊กคนลาเพิ่มในวันนี้ (ไม่ต้องลงชีต)</span>
+                        </h3>
+                        <span id="toggles-date-label" class="text-[11px] bg-teal-50 text-teal-700 font-semibold px-2.5 py-0.5 rounded-lg border border-teal-100/50">
+                            -
+                        </span>
                     </div>
-                    <!-- Debugging Error Tips inside UI -->
-                    <div id="sync-debug-box" class="mt-3 p-3 bg-rose-50 border border-rose-100 text-rose-800 rounded-xl hidden text-[11px] leading-relaxed">
-                        <h4 class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ปัญหาที่พบบ่อย:</h4>
-                        <ol class="list-decimal pl-4 space-y-1">
-                            <li>กรุณาตั้งค่าแชร์ในแผ่นงาน Google Sheets ให้เป็น <strong>"ทุกคนที่มีลิงก์มีสิทธิ์อ่าน" (Anyone with the link can view)</strong></li>
-                            <li>หากตารางไม่มีข้อมูล ลองคลิกปุ่ม <strong>"ใช้ข้อมูลสมมุติเพื่อสาธิต"</strong> เพื่อดูรูปแบบที่ถูกต้อง</li>
-                        </ol>
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="manual-leave-toggles">
+                        <!-- Dynamic Manual Toggles rendered as horizontal wide row -->
                     </div>
                 </div>
 
-                <!-- Staff Duty Counter Cards -->
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                    <h2 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
-                        <span>ภาระงานรวมรายบุคคล (เวร/วัน)</span>
-                        <span class="text-[10px] bg-slate-100 text-slate-500 font-normal px-2 py-0.5 rounded" id="stats-month-label">-</span>
-                    </h2>
-                    <div class="flex flex-col gap-3" id="staff-stats-container">
-                        <!-- Dynamic Staff Stats Rows -->
+                <!-- Calendar Card -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex-grow flex flex-col">
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                        <h2 class="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
+                            <i class="fa-solid fa-calendar-days text-teal-600"></i>
+                            <span id="calendar-title-label">ปฏิทินปฏิบัติงาน</span>
+                        </h2>
+                        <span id="holiday-count-badge" class="text-[10px] sm:text-xs bg-rose-50 text-rose-700 font-medium px-2.5 py-1 rounded-full border border-rose-100">
+                            0 วันหยุดราชการในเดือนนี้
+                        </span>
                     </div>
-                </div>
 
-                <!-- Info Help Card -->
-                <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-md">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-teal-400 mb-3">กฎเกณฑ์การสลับเวรอัตโนมัติ</h3>
-                    <ul class="text-xs space-y-2.5 text-slate-300">
-                        <li class="flex items-start gap-2">
-                            <i class="fa-solid fa-arrow-right text-teal-400 mt-0.5 shrink-0"></i>
-                            <span><b>สืบทอดรหัสเวร:</b> หากเริ่มเดือนใหม่แล้วยังไม่ถึงวันจันทร์ จะใช้รหัสสลับเวรของเดือนก่อนหน้ามาจัดแทนก่อน</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fa-solid fa-arrow-right text-teal-400 mt-0.5 shrink-0"></i>
-                            <span><b>วันคลินิก ARV (อังคาร/พฤหัสบดีที่ 2):</b> เบิดทำหน้าที่ ARV, นำ NCD ไปแทนเบิด, และเปลี่ยน Rider เป็นควบ <b class="text-teal-300">NCD+rider</b></span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fa-solid fa-arrow-right text-teal-400 mt-0.5 shrink-0"></i>
-                            <span><b>ลา 1 คน:</b> NCD ไปแทนงานคนลา, และเปลี่ยน Rider เป็นควบ <b class="text-teal-300">NCD+rider</b></span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fa-solid fa-arrow-right text-teal-400 mt-0.5 shrink-0"></i>
-                            <span><b>ลา 2 คน:</b> NCD แทนคนแรก, Rider แทนคนที่สอง (ตำแหน่ง NCD และ Rider ว่างลง)</span>
-                        </li>
-                    </ul>
+                    <!-- Calendar Week Header -->
+                    <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">
+                        <div>อา.</div>
+                        <div>จ.</div>
+                        <div>อ.</div>
+                        <div>พ.</div>
+                        <div>พฤ.</div>
+                        <div>ศ.</div>
+                        <div>ส.</div>
+                    </div>
+
+                    <!-- Calendar Grid Container -->
+                    <div class="grid grid-cols-7 gap-1.5 flex-grow" id="calendar-grid">
+                        <!-- Dynamic Calendar Cells -->
+                    </div>
                 </div>
             </div>
 
-            <!-- CENTER COLUMN: CALENDAR GRID (6 cols) -->
-            <div class="lg:col-span-6 bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col">
-                <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
-                    <h2 class="font-bold text-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-days text-teal-600"></i>
-                        <span id="calendar-title-label">ปฏิทินปฏิบัติงาน</span>
-                    </h2>
-                    <span id="holiday-count-badge" class="text-xs bg-rose-50 text-rose-700 font-medium px-2.5 py-1 rounded-full border border-rose-100">
-                        0 วันหยุดราชการในเดือนนี้
-                    </span>
-                </div>
-
-                <!-- Calendar Week Header -->
-                <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">
-                    <div>อา.</div>
-                    <div>จ.</div>
-                    <div>อ.</div>
-                    <div>พ.</div>
-                    <div>พฤ.</div>
-                    <div>ศ.</div>
-                    <div>ส.</div>
-                </div>
-
-                <!-- Calendar Grid Container -->
-                <div class="grid grid-cols-7 gap-1.5 flex-grow" id="calendar-grid">
-                    <!-- Dynamic Calendar Cells -->
-                </div>
-            </div>
-
-            <!-- RIGHT COLUMN: DAILY DETAIL & OVERVIEW (3 cols) -->
-            <div class="lg:col-span-3 flex flex-col gap-6">
+            <!-- RIGHT COLUMN: DAILY DETAIL & OVERVIEW (4 cols) -->
+            <div class="lg:col-span-4 flex flex-col gap-6">
                 <!-- Daily Inspector Panel -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex-grow flex flex-col">
                     <div class="border-b border-slate-100 pb-3 mb-4">
                         <span id="detail-weekday" class="text-xs font-bold text-slate-400 tracking-wider uppercase">วันจันทร์</span>
-                        <h2 id="detail-date" class="text-lg font-extrabold text-slate-800">1 กรกฎาคม 2569</h2>
+                        <h2 id="detail-date" class="text-base sm:text-lg font-extrabold text-slate-800">1 กรกฎาคม 2569</h2>
                     </div>
 
                     <!-- Leaves status block -->
@@ -206,17 +157,6 @@
                         </div>
                     </div>
 
-                    <!-- NEW: Manual Leave Toggles Section -->
-                    <div class="mb-5 bg-slate-50/70 border border-slate-100 rounded-xl p-3">
-                        <h3 class="text-[11px] font-bold text-slate-600 uppercase mb-2 flex items-center justify-between">
-                            <span><i class="fa-solid fa-user-pen mr-1 text-teal-600"></i> ติ๊กคนลาเพิ่มในวันนี้ (ไม่ต้องลงชีต)</span>
-                            <span class="text-[9px] text-slate-400 font-normal">จดจำอัตโนมัติ</span>
-                        </h3>
-                        <div class="grid grid-cols-3 gap-1.5" id="manual-leave-toggles">
-                            <!-- Dynamic Manual Toggles -->
-                        </div>
-                    </div>
-
                     <!-- Shift details container -->
                     <div class="flex-grow flex flex-col gap-2.5" id="detail-roles-list">
                         <!-- Dynamic list of positions and personnel -->
@@ -224,7 +164,7 @@
 
                     <!-- Logs & Notes Area -->
                     <div class="mt-5 pt-4 border-t border-slate-100" id="detail-logs-block">
-                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">การปรับปรุงและคำนวณเวรประจำวัน</h3>
+                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">บันทึกการจัดสรรประจำวัน</h3>
                         <div class="text-[11px] text-slate-600 bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1.5" id="detail-logs-container">
                             <!-- Log lists -->
                         </div>
@@ -233,11 +173,26 @@
             </div>
 
         </div>
+
+        <!-- BOTTOM ROW: STAFF STATS (Moved here to the very end of page in horizontal grid format) -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mt-2">
+            <h2 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-chart-bar text-teal-600 text-base"></i>
+                    <span>ภาระงานรวมรายบุคคล (เวร/วัน)</span>
+                </span>
+                <span class="text-[10px] bg-slate-100 text-slate-500 font-normal px-2.5 py-1 rounded-lg" id="stats-month-label">กรกฎาคม</span>
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="staff-stats-container">
+                <!-- Dynamic Staff Stats Cards rendered horizontally -->
+            </div>
+        </div>
+
     </main>
 
-    <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 py-6 text-center text-xs border-t border-slate-800 mt-12">
-        <p class="max-w-7xl mx-auto px-4">© 2569-2570 ระบบจัดสรรหน้าที่ทางการแพทย์ตามมาตรฐานสากล — ดึงข้อมูลจาก Google Sheets และสลับทดแทนอัจฉริยะ</p>
+    <!-- FOOTER (Completely cleared copyright text as per image_456018.png instructions) -->
+    <footer class="py-2 text-center text-xs mt-6">
+        <!-- Text removed to satisfy requirement -->
     </footer>
 
     <!-- Global Toast Component -->
@@ -248,7 +203,6 @@
 
     <script>
         // ----------------- CONFIGURATION & CONSTANTS -----------------
-        // ลิงก์ตารางงานจริงของคุณผู้ใช้จากแผ่นงาน Google Sheets
         const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/10euYdImtO7uMZlVK5MSwkU5kJKkBBi3Phuv5c2fMyMI/edit?usp=sharing";
 
         // รายชื่อเจ้าหน้าที่หลัก 6 คน
@@ -285,7 +239,7 @@
 
         // รหัสประจำเดือน ก.ค. 2569 - พ.ค. 2570 และเพิ่ม มิ.ย. 2569 เพื่อใช้อ้างอิงช่วงคาบเกี่ยวสัปดาห์แรก
         const monthlyStaff = {
-            "2026-06": {'C':'แอ๋ม', 'D':'เบิด', 'E':'หลิว', 'F':'แปง', 'A':'เพ็ญ', 'B':'กิ๊ม'}, // สำหรับใช้อ้างอิงก่อนวันจันทร์แรก ก.ค. 69
+            "2026-06": {'C':'แอ๋ม', 'D':'เบิด', 'E':'หลิว', 'F':'แปง', 'A':'เพ็ญ', 'B':'กิ๊ม'},
             "2026-07": {'B':'แอ๋ม', 'C':'เบิด', 'D':'หลิว', 'E':'แปง', 'F':'เพ็ญ', 'A':'กิ๊ม'},
             "2026-08": {'A':'แอ๋ม', 'B':'เบิด', 'C':'หลิว', 'D':'แปง', 'E':'เพ็ญ', 'F':'กิ๊ม'},
             "2026-09": {'F':'แอ๋ม', 'A':'เบิด', 'B':'หลิว', 'C':'แปง', 'D':'เพ็ญ', 'E':'กิ๊ม'},
@@ -302,19 +256,15 @@
         // ----------------- STATE CONSTANTS -----------------
         let currentYear = 2026;
         let currentMonth = 7; // กรกฎาคม
-        let selectedDateStr = "2026-07-14"; // Default to July 14th for the requested test demonstration
+        let selectedDateStr = "2026-07-14"; // Default to July 14th
         
-        // ข้อมูลการลาที่ซิงค์เรียบร้อย (DateStr -> List of Staff Names)
         let leaveRecords = {};
-        
-        // ข้อมูลการลาที่ผู้ใช้งานติ๊กเพิ่มเติมด้วยตนเอง (DateStr -> List of Staff Names)
         let manualLeaves = {};
 
         // ----------------- EVENT INITIALIZERS -----------------
         window.onload = function() {
             initMonthSelector();
             
-            // โหลดลิงก์เดิมที่เคยบันทึกไว้ในเครื่อง
             let savedUrl = localStorage.getItem("duty_sheets_url");
             if (!savedUrl || savedUrl.trim() === "") {
                 savedUrl = DEFAULT_SHEET_URL;
@@ -322,7 +272,6 @@
             }
             document.getElementById("sheet-url-input").value = savedUrl;
 
-            // โหลดสิทธิ์การลาที่บันทึกไว้แบบกำหนดเอง
             try {
                 const savedManual = localStorage.getItem("manual_leaves");
                 if (savedManual) {
@@ -333,16 +282,15 @@
                 manualLeaves = {};
             }
 
-            // รันการดึงข้อมูลทันทีเพื่อเชื่อมระบบวันลาแบบเรียลไทม์
+            // Silent fetch from Google Sheets in the background
             syncGoogleSheets();
         };
 
-        // สร้างตัวเลือกเดือนปีแบบไดนามิก
         function initMonthSelector() {
             const select = document.getElementById("month-select");
             select.innerHTML = "";
-            const start = new Date(2026, 6, 1); // ก.ค. 2026
-            const end = new Date(2027, 4, 31);   // พ.ค. 2027
+            const start = new Date(2026, 6, 1); // July 2026
+            const end = new Date(2027, 4, 31);   // May 2027
 
             let curr = new Date(start);
             while (curr <= end) {
@@ -362,19 +310,17 @@
             }
         }
 
-        // จัดการเมื่อสลับเดือนในปฏิทิน
         function onMonthSelectChange() {
             const val = document.getElementById("month-select").value;
             const [y, m] = val.split("-").map(Number);
             currentYear = y;
             currentMonth = m;
             
-            selectedDateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-14`; // Keep it highlighted around mid-month
+            selectedDateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-14`; // Focus on mid-month
             updateCalendar();
             selectDate(selectedDateStr);
         }
 
-        // เปลี่ยนเดือนทีละ 1 ขั้น
         function changeMonth(dir) {
             const select = document.getElementById("month-select");
             let index = select.selectedIndex + dir;
@@ -384,7 +330,6 @@
             }
         }
 
-        // แจ้งเตือน Toast UI
         function showToast(msg, isSuccess = true) {
             const toast = document.getElementById("toast");
             const toastIcon = document.getElementById("toast-icon");
@@ -392,7 +337,7 @@
             
             toastMessage.textContent = msg;
             if (isSuccess) {
-                toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-sm";
+                toastIcon.className = "fa-solid fa-circle-check text-teal-400 text-sm";
             } else {
                 toastIcon.className = "fa-solid fa-triangle-exclamation text-rose-400 text-sm";
             }
@@ -403,8 +348,6 @@
             }, 3000);
         }
 
-        // ----------------- AUTOMATIC URL CONVERTER -----------------
-        // แปลงลิงก์ Edit/Share ของ Google Sheets ให้เป็น CSV Export
         function getCsvExportUrl(url) {
             if (!url) return "";
             url = url.trim();
@@ -417,152 +360,57 @@
             return url;
         }
 
-        // ----------------- SYNC GOOGLE SHEETS & DIAGNOSTICS -----------------
+        // ----------------- SYNC GOOGLE SHEETS -----------------
         function syncGoogleSheets() {
             const urlInput = document.getElementById("sheet-url-input").value;
-            if (!urlInput) {
-                updateSyncUI("error", "ไม่มีลิงก์ต้นทาง", "-", 0, "กรุณากรอกลิงก์ Google Sheets");
-                return;
-            }
+            if (!urlInput) return;
 
             const convertedUrl = getCsvExportUrl(urlInput);
             localStorage.setItem("duty_sheets_url", urlInput);
 
-            const icon = document.getElementById("sync-icon");
-            icon.classList.add("fa-spin");
-
-            updateSyncUI("pending", "กำลังดึงข้อมูล...", "-", 0);
-
-            // ใช้ PapaParse ดาวน์โหลดข้อมูลเป็น CSV
             Papa.parse(convertedUrl, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
                 error: function(err) {
                     console.error("PapaParse Error:", err);
-                    icon.classList.remove("fa-spin");
-                    updateSyncUI("error", "ไม่สามารถดาวน์โหลดได้", "ไม่มี", 0, "ระบบดึงข้อมูลไม่ได้เนื่องจากไม่ได้เปิดแชร์สิทธิ์เป็นสาธารณะ");
                 },
                 complete: function(results) {
-                    icon.classList.remove("fa-spin");
-                    
                     const rows = results.data;
-                    if (!rows || rows.length === 0) {
-                        updateSyncUI("error", "ตารางว่างเปล่า", "-", 0, "ไม่พบข้อมูลใน Google Sheets เลย");
-                        return;
-                    }
+                    if (!rows || rows.length === 0) return;
 
-                    // ป้องกันในกรณีที่ระบบถูกปฏิเสธสิทธิ์และได้รับหน้า HTML Login จาก Google แทน
                     const firstCell = Object.keys(rows[0])[0] || "";
-                    if (firstCell.includes("<!DOCTYPE") || firstCell.includes("<html") || JSON.stringify(rows).includes("google-site-verification")) {
-                        updateSyncUI("error", "ติดรหัสผ่าน/ปฏิเสธสิทธิ์", "HTML Page", 0, "ลิงก์นี้ยังไม่ถูกตั้งค่าให้ 'ทุกคนที่มีลิงก์มีสิทธิ์อ่าน' กรุณาไปเปิดแชร์ใน Google Sheets");
-                        return;
-                    }
+                    if (firstCell.includes("<!DOCTYPE") || firstCell.includes("<html")) return;
 
-                    // ประมวลผลและดึงวันลา
-                    const parseDetails = processLeaveCsvData(rows);
-                    
-                    if (parseDetails.success) {
-                        updateSyncUI(
-                            "success", 
-                            "เชื่อมต่อสำเร็จ", 
-                            parseDetails.detectedCols, 
-                            parseDetails.count
-                        );
-                        showToast(`เชื่อมต่อและนำเข้าวันลาสำเร็จ ${parseDetails.count} รายการ!`);
-                    } else {
-                        updateSyncUI(
-                            "error", 
-                            "ไม่พบหัวตารางที่ถูกต้อง", 
-                            parseDetails.detectedCols, 
-                            0, 
-                            "ระบบค้นหาคอลัมน์ไม่พบ กรุณาตั้งค่าตามคู่มือ"
-                        );
-                    }
-
+                    processLeaveCsvData(rows);
                     updateCalendar();
                     selectDate(selectedDateStr);
                 }
             });
         }
 
-        // อัปเดตข้อมูลกล่องวินิจฉัย Database บน UI
-        function updateSyncUI(status, resultText, detectedCols, count, debugMsg = "") {
-            const dot = document.getElementById("sync-status-dot");
-            const resultLabel = document.getElementById("sync-result-text");
-            const colsLabel = document.getElementById("sync-detected-cols");
-            const countLabel = document.getElementById("sync-records-count");
-            const debugBox = document.getElementById("sync-debug-box");
-
-            colsLabel.textContent = detectedCols;
-            countLabel.textContent = `${count} วัน`;
-
-            if (status === "success") {
-                dot.className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
-                resultLabel.className = "font-bold text-emerald-600";
-                resultLabel.textContent = resultText;
-                debugBox.classList.add("hidden");
-            } else if (status === "pending") {
-                dot.className = "w-3 h-3 rounded-full bg-amber-400 animate-bounce";
-                resultLabel.className = "font-bold text-amber-500";
-                resultLabel.textContent = resultText;
-                debugBox.classList.add("hidden");
-            } else {
-                dot.className = "w-3 h-3 rounded-full bg-rose-500";
-                resultLabel.className = "font-bold text-rose-600";
-                resultLabel.textContent = resultText;
-                
-                debugBox.classList.remove("hidden");
-                if (debugMsg) {
-                    showToast(debugMsg, false);
-                }
-            }
-        }
-
-        // ระบบประมวลผลข้อมูลการลาหยุด รองรับหัวคอลัมน์ตามภาพจริง (start, end, name, period)
         function processLeaveCsvData(rows) {
             leaveRecords = {};
-            if (!rows || rows.length === 0) return { success: false, count: 0, detectedCols: "ไม่มี" };
+            if (!rows || rows.length === 0) return;
 
-            let startKey = null;
-            let endKey = null;
-            let nameKey = null;
-            let periodKey = null;
+            let startKey = null, endKey = null, nameKey = null, periodKey = null;
 
-            // ตรวจจับหัวคอลัมน์จากแถวแรกของไฟล์ชีต (Smart Dynamic Header Matcher)
             const sample = rows[0];
             const keys = Object.keys(sample);
 
             for (const key of keys) {
                 const norm = key.trim().toLowerCase();
-                
-                if (norm === "start" || norm === "วันเริ่ม" || norm.includes("เริ่ม") || norm === "start_date") {
-                    startKey = key;
-                }
-                if (norm === "end" || norm === "วันสิ้นสุด" || norm.includes("สิ้นสุด") || norm === "end_date") {
-                    endKey = key;
-                }
-                if (norm === "name" || norm === "ชื่อ" || norm.includes("ผู้ลา") || norm.includes("staff")) {
-                    nameKey = key;
-                }
-                if (norm === "period" || norm === "ช่วงเวลา" || norm.includes("เวลา") || norm === "type_period") {
-                    periodKey = key;
-                }
+                if (norm === "start" || norm === "วันเริ่ม" || norm.includes("เริ่ม") || norm === "start_date") startKey = key;
+                if (norm === "end" || norm === "วันสิ้นสุด" || norm.includes("สิ้นสุด") || norm === "end_date") endKey = key;
+                if (norm === "name" || norm === "ชื่อ" || norm.includes("ผู้ลา") || norm.includes("staff")) nameKey = key;
+                if (norm === "period" || norm === "ช่วงเวลา" || norm.includes("เวลา") || norm === "type_period") periodKey = key;
             }
 
-            // Fallbacks ถ้าระบบหาแบบเป๊ะๆ ไม่พบ
-            if (!startKey) {
-                for (const key of keys) {
-                    const norm = key.trim().toLowerCase();
-                    if (norm.includes("วัน") || norm.includes("date")) { startKey = key; break; }
-                }
-                if (!startKey) startKey = keys[2] || keys[0];
-            }
+            if (!startKey) startKey = keys[2] || keys[0];
             if (!endKey) endKey = keys[3] || startKey;
             if (!nameKey) nameKey = keys[1] || keys[0];
             if (!periodKey) periodKey = keys[5] || keys[0];
 
-            let count = 0;
             rows.forEach(row => {
                 let rawStart = row[startKey];
                 let rawEnd = row[endKey] || rawStart;
@@ -576,7 +424,6 @@
                 rawName = rawName.trim();
                 rawPeriod = rawPeriod ? rawPeriod.trim() : "เต็มวัน";
 
-                // ตรวจสอบคัดกรองเฉพาะ "เต็มวัน" หรือ "เช้า"
                 const normPeriod = rawPeriod.toLowerCase();
                 const isValidPeriod = normPeriod.includes("เต็มวัน") || 
                                       normPeriod.includes("เช้า") || 
@@ -584,7 +431,6 @@
                                       normPeriod.includes("morning");
                 if (!isValidPeriod) return;
 
-                // ตรวจจับชื่อเจ้าหน้าที่ 6 คน (รองรับการสะกดวรรณยุกต์ปนเป กิ๊ม/กิ้ม)
                 let staffName = null;
                 for (const name of ALL_STAFF) {
                     const normRaw = rawName.replace(/๊/g, '้').trim();
@@ -596,32 +442,21 @@
                 }
                 if (!staffName) return;
 
-                // แปลงและสแกนหากลุ่มวันที่ลาหยุด (แก้ไขบั๊ก Timezone Offset ด้วยฟังก์ชันแบบแมนนวลอย่างเสถียร)
                 let formattedStart = parseDateString(rawStart);
                 let formattedEnd = parseDateString(rawEnd) || formattedStart;
 
                 if (formattedStart) {
                     let rangeDates = getDatesInRange(formattedStart, formattedEnd);
                     rangeDates.forEach(dateStr => {
-                        if (!leaveRecords[dateStr]) {
-                            leaveRecords[dateStr] = [];
-                        }
+                        if (!leaveRecords[dateStr]) leaveRecords[dateStr] = [];
                         if (!leaveRecords[dateStr].includes(staffName)) {
                             leaveRecords[dateStr].push(staffName);
-                            count++;
                         }
                     });
                 }
             });
-
-            return {
-                success: true,
-                count: count,
-                detectedCols: `เริ่ม: "${startKey}", สิ้นสุด: "${endKey}", ชื่อ: "${nameKey}", ช่วงเวลา: "${periodKey}"`
-            };
         }
 
-        // คำนวณขอบเขตช่วงของวันลา (เริ่ม -> สิ้นสุด) - ฉบับแก้ไข Timezone Offset
         function getDatesInRange(startDateStr, endDateStr) {
             let dates = [];
             const startParts = startDateStr.split("-").map(Number);
@@ -629,7 +464,6 @@
             
             if (startParts.length !== 3 || endParts.length !== 3) return [];
             
-            // สร้างวันขึ้นมาแบบอ้างอิงกับเขตเวลาของเครื่องผู้ใช้งานโดยตรงป้องกันการปัดวันล่วงหน้า/ย้อนหลัง
             let start = new Date(startParts[0], startParts[1] - 1, startParts[2]);
             let end = new Date(endParts[0], endParts[1] - 1, endParts[2]);
             
@@ -648,32 +482,24 @@
             return dates;
         }
 
-        // ระบบวิเคราะห์ข้อมูลวันที่แบบครอบจักรวาล (Universal Date Parser)
         function parseDateString(str) {
             if (!str) return null;
-            str = str.trim();
-            
-            // ลบเวลาส่วนท้ายออกถ้าตรวจพบ (เช่น 14/07/2026 12:00:00)
-            str = str.split(' ')[0].split('T')[0];
-            str = str.replace(/\//g, "-");
+            str = str.trim().split(' ')[0].split('T')[0].replace(/\//g, "-");
 
             let parts = str.split("-");
             if (parts.length === 3) {
                 let year, month, day;
-                if (parts[0].length === 4) { // YYYY-MM-DD
+                if (parts[0].length === 4) {
                     year = parseInt(parts[0], 10);
                     month = parseInt(parts[1], 10);
                     day = parseInt(parts[2], 10);
-                } else { // DD-MM-YYYY
+                } else {
                     day = parseInt(parts[0], 10);
                     month = parseInt(parts[1], 10);
                     year = parseInt(parts[2], 10);
                 }
 
-                // สลับ พ.ศ. ของไทย เป็น ค.ศ.
                 if (year > 2500) year = year - 543;
-
-                // ตรวจจับปีแบบสองตัวเลขพุทธศักราช (เช่น 69 หรือ 70)
                 if (year < 100) {
                     if (year >= 60 && year <= 80) year = year + 2500 - 543;
                     else year = year + 2000;
@@ -684,21 +510,12 @@
                 }
             }
 
-            // แบบภาษาไทย (เช่น "1 ก.ค. 2569" หรือ "1 กรกฎาคม 2569")
             let cleanStr = str.replace(/วัน[ก-๙]+ที่\s*/g, "").trim();
             const thaiMonths = {
-                "ม.ค.": 1, "มกราคม": 1,
-                "ก.พ.": 2, "กุมภาพันธ์": 2,
-                "มี.ค.": 3, "มีนาคม": 3,
-                "เม.ย.": 4, "เมษายน": 4,
-                "พ.ค.": 5, "พฤษภาคม": 5,
-                "มิ.ย.": 6, "มิถุนายน": 6,
-                "ก.ค.": 7, "กรกฎาคม": 7,
-                "ส.ค.": 8, "สิงหาคม": 8,
-                "ก.ย.": 9, "กันยายน": 9,
-                "ต.ค.": 10, "ตุลาคม": 10,
-                "พ.ย.": 11, "พฤศจิกายน": 11,
-                "ธ.ค.": 12, "ธันวาคม": 12
+                "ม.ค.": 1, "มกราคม": 1, "ก.พ.": 2, "กุมภาพันธ์": 2, "มี.ค.": 3, "มีนาคม": 3,
+                "เม.ย.": 4, "เมษายน": 4, "พ.ค.": 5, "พฤษภาคม": 5, "มิ.ย.": 6, "มิถุนายน": 6,
+                "ก.ค.": 7, "กรกฎาคม": 7, "ส.ค.": 8, "สิงหาคม": 8, "ก.ย.": 9, "กันยายน": 9,
+                "ต.ค.": 10, "ตุลาคม": 10, "พ.ย.": 11, "พฤศจิกายน": 11, "ธ.ค.": 12, "ธันวาคม": 12
             };
 
             let words = cleanStr.split(/\s+/);
@@ -710,10 +527,7 @@
                 let month = thaiMonths[monthStr];
                 if (!month) {
                     for (let key in thaiMonths) {
-                        if (monthStr.includes(key)) {
-                            month = thaiMonths[key];
-                            break;
-                        }
+                        if (monthStr.includes(key)) { month = thaiMonths[key]; break; }
                     }
                 }
 
@@ -724,7 +538,6 @@
                     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 }
             }
-
             return null;
         }
 
@@ -737,45 +550,23 @@
             
             const idx = manualLeaves[dateStr].indexOf(name);
             if (idx > -1) {
-                // หากติ๊กซ้ำ ให้ทำการยกเลิกวันลาหยุดแบบกำหนดเอง
                 manualLeaves[dateStr].splice(idx, 1);
                 showToast(`ยกเลิกสถานะลาเพิ่มของคุณ "${name}" ในวันนี้แล้ว`);
             } else {
-                // ติ๊กเพื่อระบุวันลาหยุดเพิ่มเติม
                 manualLeaves[dateStr].push(name);
-                showToast(`ระบุการลาหยุดเพิ่มเติมสำหรับ "${name}" สำเร็จ!`);
+                showToast(`เพิ่มการลาเพิ่มสำหรับ "${name}" สำเร็จ`);
             }
 
-            // ลบอาเรย์ทิ้งหากวันนั้นไม่มีการลาแบบแมนนวลเหลืออยู่เลย
             if (manualLeaves[dateStr].length === 0) {
                 delete manualLeaves[dateStr];
             }
 
-            // บันทึกสถานะไว้ในหน่วยความจำของอุปกรณ์
             localStorage.setItem("manual_leaves", JSON.stringify(manualLeaves));
-
-            // ปรับปรุงปฏิทินและกล่องสถิติรายวัน
             updateCalendar();
             selectDate(dateStr);
         }
 
-        // ดึงข้อมูลทดสอบระบบแบบ sandbox
-        function loadMockData() {
-            leaveRecords = {
-                "2026-07-02": ["หลิว"], // ลา 1 คน
-                "2026-07-03": ["เบิด", "แอ๋ม"], // ลา 2 คน
-                "2026-07-09": ["แปง"], // วันพฤหัสบดีที่สอง (มี ARV และ ลา 1 คน)
-                "2026-07-13": ["แปง", "กิ๊ม"],
-                "2026-07-14": ["แปง", "กิ๊ม"] // วันอังคารที่สอง (มี ARV และ ลา 2 คนพร้อมกัน เพื่อทดสอบความเสถียรของบั๊กทั้งหมด)
-            };
-            updateSyncUI("success", "ใช้ข้อมูลสมมุติสาธิต", "Mock Data", 7);
-            showToast("สลับเปลี่ยนใช้ระบบจำลองข้อมูลเพื่อสาธิตและตรวจสอบการจัดสรรเรียบร้อย!");
-            updateCalendar();
-            selectDate(selectedDateStr);
-        }
-
         // ----------------- BUSINESS LOGIC ENGINE -----------------
-        // สืบทอดรหัสเวรรายเดือนข้ามสัปดาห์หากเดือนใหม่ไม่ได้เริ่มในวันจันทร์
         function getStaffMapForDate(dateStr) {
             const d = new Date(dateStr);
             const year = d.getFullYear();
@@ -812,10 +603,9 @@
             }
         }
 
-        // ตรวจสอบวันอังคารและพฤหัสบดีสัปดาห์ที่สองของเดือน (ARV Clinic)
         function isSecondTuesdayOrThursday(dateStr) {
             const d = new Date(dateStr);
-            const dayOfWeek = d.getDay(); // 2 = อังคาร, 4 = พฤหัสบดี
+            const dayOfWeek = d.getDay();
             
             if (dayOfWeek !== 2 && dayOfWeek !== 4) return { isARV: false, type: "" };
 
@@ -831,7 +621,6 @@
             return { isARV: false, type: "" };
         }
 
-        // ระบบจัดสรรอัตโนมัติขั้นสูงสุด รองรับ ARV และ สิทธิ์การลา 1-2 คน แบบไม่มีสะดุดหรือสับสนตัวเอง
         function calculateDutiesForDate(dateStr) {
             const d = new Date(dateStr);
             const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
@@ -857,17 +646,13 @@
                 return { isOff: true, reason: "ไม่มีตารางงานในระบบ", duties: {}, replacementLogs: [], activeLeaves: [] };
             }
 
-            // 1. ตั้งค่าพื้นฐานตามรหัส
             const baseDuties = {};
             for (const [pos, letter] of Object.entries(dayShift)) {
                 baseDuties[pos] = staffMap[letter] || "ไม่มีผู้ปฏิบัติงาน";
             }
 
-            // นำข้อมูลใบลาจาก Sheets มารวมเข้ากับ วันลาที่คุณติ๊กเพิ่มเองด้วยตนเอง (Manual Leaves)
             const sheetLeaves = leaveRecords[dateStr] || [];
             const manualLeavesOnDate = manualLeaves[dateStr] || [];
-            
-            // กรองหา Union List แบบกำจัดตัวซ้ำ
             const leavesOnDate = Array.from(new Set([...sheetLeaves, ...manualLeavesOnDate]));
 
             const arvInfo = isSecondTuesdayOrThursday(dateStr);
@@ -881,9 +666,8 @@
             let rider = baseDuties['rider'];
             let arv = null;
 
-            // สำรองรายชื่อพนักงานดั้งเดิมก่อนมีการโยกเวรลา
-            let primaryBackup = ncd;      // NCD (Primary Backup)
-            let secondaryBackup = rider;  // Rider (Secondary Backup)
+            let primaryBackup = ncd;
+            let secondaryBackup = rider;
 
             let ncdVacant = false;
             let riderVacant = false;
@@ -899,7 +683,7 @@
                 return null;
             };
 
-            // 1. ตรวจสอบเงื่อนไข วันคลินิก ARV ก่อนสิ่งอื่นใด
+            // 1. ARV Clinic swapping logic
             if (arvInfo.isARV) {
                 const birdPos = getBirdOriginalPosition();
                 const activeNcdUser = ncd;
@@ -929,14 +713,13 @@
                 replacementLogs.push(`คลินิก ARV: ตำแหน่ง Rider ถูกเปลี่ยนเป็นควบ "NCD+rider"`);
             }
 
-            // 2. ตรวจสอบและประมวลผลระบบสิทธิ์ใบลาหยุดประจำวัน (รวมกลุ่มคนที่มีส่วนร่วมในวันนั้น)
+            // 2. Daily Leave replacements mapping
             const assignedPeople = [opd1, opd2, ipd, verify, ncd, rider, arv];
             const activeLeaves = leavesOnDate.filter(name => {
                 return assignedPeople.some(person => person && person.includes(name));
             });
 
             if (activeLeaves.length > 0) {
-                // คัดกรองและแบ่งแยกว่ามีคนลาใน "ตำแหน่งเวรหลัก" (OPD, IPD, verify, ARV) กี่คน
                 let criticalLeavers = [];
                 if (opd1 && activeLeaves.some(l => opd1.includes(l))) criticalLeavers.push({ pos: 'OPD1', name: extractCleanName(opd1) });
                 if (opd2 && activeLeaves.some(l => opd2.includes(l))) criticalLeavers.push({ pos: 'OPD2', name: extractCleanName(opd2) });
@@ -944,14 +727,12 @@
                 if (verify && activeLeaves.some(l => verify.includes(l))) criticalLeavers.push({ pos: 'verify', name: extractCleanName(verify) });
                 if (arv && activeLeaves.some(l => arv.includes(l))) criticalLeavers.push({ pos: 'ARV', name: extractCleanName(arv) });
 
-                // ตรวจสอบความพร้อมการมาทำงานของพนักงานสำรอง (NCD และ Rider)
                 const isNcdOnLeave = activeLeaves.includes(extractCleanName(primaryBackup));
                 const isRiderOnLeave = activeLeaves.includes(extractCleanName(secondaryBackup));
 
                 if (criticalLeavers.length === 1) {
                     const leaver = criticalLeavers[0];
                     if (!isNcdOnLeave) {
-                        // NCD ทำหน้าที่สับแทนตำแหน่งหลักที่ลาไป
                         const replText = `${primaryBackup} (แทน${leaver.name}ที่ลา)`;
                         if (leaver.pos === 'OPD1') opd1 = replText;
                         else if (leaver.pos === 'OPD2') opd2 = replText;
@@ -963,7 +744,6 @@
                         isRiderCombined = true;
                         replacementLogs.push(`ลา 1 คน: "${leaver.name}" (${leaver.pos}) ลาหยุด -> โยก "${primaryBackup}" (NCD) ไปสลับแทน และเปลี่ยน Rider เป็นควบ "NCD+rider"`);
                     } else if (!isRiderOnLeave) {
-                        // กรณี NCD ลาหยุดเช่นกัน ให้ใช้ตัวสำรองขั้นสอง (Rider) ไปทำงานแทนเวรหลักที่ลา
                         const replText = `${secondaryBackup} (แทน${leaver.name}ที่ลา)`;
                         if (leaver.pos === 'OPD1') opd1 = replText;
                         else if (leaver.pos === 'OPD2') opd2 = replText;
@@ -975,7 +755,6 @@
                         ncdVacant = true;
                         replacementLogs.push(`ลา 1 คน: "${leaver.name}" (${leaver.pos}) ลาหยุด และ "${primaryBackup}" (NCD) ก็ลางาน -> โยก "${secondaryBackup}" (Rider) ไปช่วยแทน`);
                     } else {
-                        // ไม่มีพนักงานสำรองเหลือเลย
                         const replText = `ว่าง (ไม่มีผู้แทน - "${leaver.name}" ลา)`;
                         if (leaver.pos === 'OPD1') opd1 = replText;
                         else if (leaver.pos === 'OPD2') opd2 = replText;
@@ -990,7 +769,6 @@
                     const leaver2 = criticalLeavers[1];
 
                     if (!isNcdOnLeave && !isRiderOnLeave) {
-                        // มีใบลาหลัก 2 คน และสำรองทั้งสองไม่ลางานเลย
                         const repl1 = `${primaryBackup} (แทน${leaver1.name}ที่ลา)`;
                         const repl2 = `${secondaryBackup} (แทน${leaver2.name}ที่ลา)`;
 
@@ -1011,7 +789,6 @@
                         replacementLogs.push(`ลา 2 คน: "${leaver1.name}" และ "${leaver2.name}" ลาหยุด -> ดึง "${primaryBackup}" (NCD) แทนคนแรก และ "${secondaryBackup}" (Rider) แทนคนที่สอง`);
                     } 
                     else if (!isNcdOnLeave) {
-                        // สำรองเหลือเพียง NCD คนเดียว
                         const repl1 = `${primaryBackup} (แทน${leaver1.name}ที่ลา)`;
                         if (leaver1.pos === 'OPD1') opd1 = repl1;
                         else if (leaver1.pos === 'OPD2') opd2 = repl1;
@@ -1030,7 +807,6 @@
                         replacementLogs.push(`ลา 2 คน: สับเวรของ "${leaver1.name}" ด้วย "${primaryBackup}" (NCD) ส่วนตำแหน่งที่ลาของ "${leaver2.name}" ไม่มีคนแทนเนื่องจากคนล้นจำนวนพนักงาน`);
                     }
                     else if (!isRiderOnLeave) {
-                        // สำรองเหลือเพียง Rider คนเดียว
                         const repl1 = `${secondaryBackup} (แทน${leaver1.name}ที่ลา)`;
                         if (leaver1.pos === 'OPD1') opd1 = repl1;
                         else if (leaver1.pos === 'OPD2') opd2 = repl1;
@@ -1050,7 +826,6 @@
                         replacementLogs.push(`ลา 2 คน: สับเวรของ "${leaver1.name}" ด้วย "${secondaryBackup}" (Rider) ส่วนตำแหน่งที่ลาของ "${leaver2.name}" ว่างเนื่องจากกำลังคนไม่เพียงพอ`);
                     }
                     else {
-                        // พนักงานสำรองหลักและสำรองสองลากันหมดเกลี้ยง
                         replacementLogs.push(`เตือนกำลังคนวิกฤต: ผู้ปฏิบัติงานหลักลาและกำลังพลสำรองในตารางต่างลาพร้อมกัน`);
                         criticalLeavers.forEach(cl => {
                             const repl = `ว่าง (ไม่มีผู้แทน - "${cl.name}" ลา)`;
@@ -1063,7 +838,6 @@
                     }
                 }
 
-                // สรุปสถานะความว่างงานและสิทธิ์ทดแทนสำหรับ NCD / Rider ที่เป็นคนลาเองโดยตรง
                 if (isNcdOnLeave) {
                     ncdVacant = true;
                     if (!activeLeaves.includes(extractCleanName(secondaryBackup)) && criticalLeavers.length === 0) {
@@ -1077,7 +851,6 @@
                 }
             }
 
-            // รวมตารางงานสรุปขั้นตอนสุดท้าย
             const finalDuties = { OPD1: opd1, OPD2: opd2, IPD: ipd, verify: verify };
             
             if (ncdVacant) {
@@ -1116,14 +889,16 @@
 
             const firstDateOfMonth = new Date(currentYear, currentMonth - 1, 1);
             document.getElementById("calendar-title-label").textContent = `ปฏิทินปฏิบัติงาน ประจำเดือน ${firstDateOfMonth.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}`;
-            document.getElementById("stats-month-label").textContent = firstDateOfMonth.toLocaleDateString('th-TH', { month: 'short' });
+            
+            // Update stats indicators
+            const thMonthShort = firstDateOfMonth.toLocaleDateString('th-TH', { month: 'short' });
+            document.getElementById("stats-month-label").textContent = `สะสมตลอดเดือน ${thMonthShort}`;
 
             const startDayOfWeek = firstDateOfMonth.getDay();
             const totalDays = new Date(currentYear, currentMonth, 0).getDate();
 
             let holidayCount = 0;
 
-            // 1. เติมช่องว่างด้านหน้าสัปดาห์
             for (let i = 0; i < startDayOfWeek; i++) {
                 const empty = document.createElement("div");
                 empty.className = "bg-slate-50 border border-transparent min-h-[95px] rounded-2xl";
@@ -1135,7 +910,6 @@
                 staffDutyStats[name] = 0;
             });
 
-            // 2. เติมวันจัดสรรลงเซลล์
             for (let day = 1; day <= totalDays; day++) {
                 const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const result = calculateDutiesForDate(dateStr);
@@ -1143,7 +917,7 @@
                 const cell = document.createElement("div");
                 cell.className = `min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative ${
                     dateStr === selectedDateStr 
-                        ? 'border-teal-600 ring-2 ring-teal-500/20 bg-teal-50/10' 
+                        ? 'border-teal-600 ring-2 ring-teal-500/20 bg-teal-50/10 shadow-sm' 
                         : 'border-slate-100 bg-white hover:border-teal-200 hover:shadow-md'
                 }`;
                 cell.onclick = () => selectDate(dateStr);
@@ -1250,21 +1024,23 @@
                 const count = stats[name] || 0;
                 const percentage = (count / maxDuty) * 100;
 
-                const row = document.createElement("div");
-                row.className = "space-y-1.5";
-                row.innerHTML = `
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="font-bold text-slate-700 flex items-center gap-1.5">
+                const card = document.createElement("div");
+                card.className = "bg-slate-50/70 hover:bg-slate-100 p-4 rounded-xl border border-slate-100 transition-all duration-300 flex flex-col justify-between gap-3 shadow-xs";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-slate-700 text-xs sm:text-sm flex items-center gap-1.5">
                             <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
                             ${name}
                         </span>
-                        <span class="font-extrabold text-slate-900">${count} เวร</span>
+                        <span class="font-extrabold text-slate-900 text-xs sm:text-sm">${count} เวร</span>
                     </div>
-                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div class="bg-gradient-to-r from-teal-500 to-cyan-500 h-full rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                    <div class="space-y-1">
+                        <div class="w-full bg-slate-200/80 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-gradient-to-r from-teal-500 to-cyan-500 h-full rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                        </div>
                     </div>
                 `;
-                container.appendChild(row);
+                container.appendChild(card);
             });
         }
 
@@ -1281,6 +1057,10 @@
 
             const result = calculateDutiesForDate(dateStr);
 
+            // Update interactive toggle title above the calendar
+            const thDateText = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+            document.getElementById("toggles-date-label").textContent = `ประจำวันที่ ${thDateText}`;
+
             document.getElementById("detail-weekday").textContent = d.toLocaleDateString('th-TH', { weekday: 'long' });
             document.getElementById("detail-date").textContent = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -1292,7 +1072,7 @@
                 leaveContainer.innerHTML = "";
                 result.activeLeaves.forEach(name => {
                     const badge = document.createElement("span");
-                    badge.className = "px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-bold rounded-lg border border-rose-100 flex items-center gap-1";
+                    badge.className = "px-2.5 py-1 bg-rose-50 text-rose-700 text-[11px] font-bold rounded-lg border border-rose-100 flex items-center gap-1";
                     badge.innerHTML = `<i class="fa-solid fa-plane-departure text-[10px]"></i> ${name} ลา`;
                     leaveContainer.appendChild(badge);
                 });
@@ -1300,7 +1080,7 @@
                 leaveBlock.classList.add("hidden");
             }
 
-            // --- NEW: Render Manual Leave Toggles inside Daily Inspector panel ---
+            // --- Render Manual Leave Toggles inside Horizontal Panel above Calendar ---
             const manualContainer = document.getElementById("manual-leave-toggles");
             manualContainer.innerHTML = "";
             
@@ -1312,20 +1092,17 @@
                 btn.type = "button";
                 
                 if (isSheetLeave) {
-                    // หากลาหยุดจากระบบ Sheets แล้ว ให้ล็อกสถานะและห้ามกดยกเลิก
-                    btn.className = "py-1.5 px-1 bg-rose-100 text-rose-800 border border-rose-200 rounded-lg text-[10px] font-bold cursor-not-allowed opacity-80 flex flex-col items-center justify-center";
+                    btn.className = "py-2 px-1 bg-rose-100 text-rose-800 border border-rose-200 rounded-xl text-[11px] font-bold cursor-not-allowed opacity-80 flex flex-col items-center justify-center shadow-sm";
                     btn.disabled = true;
-                    btn.innerHTML = `<span>${name}</span><span class="text-[8px] font-normal text-rose-600/80">(จากชีต)</span>`;
+                    btn.innerHTML = `<span>${name}</span><span class="text-[9px] font-normal text-rose-600/80">(จากชีต)</span>`;
                 } else if (isManualLeave) {
-                    // หากลาแบบแมนนวล ให้แสดงเป็นปุ่มสีเหลืองพร้อมคลิกยกเลิกสถานะได้
-                    btn.className = "py-1.5 px-1 bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 rounded-lg text-[10px] font-bold flex flex-col items-center justify-center transition-all shadow-sm";
+                    btn.className = "py-2 px-1 bg-amber-500 hover:bg-amber-600 text-white border border-amber-600 rounded-xl text-[11px] font-bold flex flex-col items-center justify-center transition-all shadow-sm";
                     btn.onclick = () => toggleManualLeave(name);
-                    btn.innerHTML = `<span>${name}</span><span class="text-[8px] font-light"><i class="fa-solid fa-circle-minus"></i> ลาเพิ่ม</span>`;
+                    btn.innerHTML = `<span>${name}</span><span class="text-[9px] font-light"><i class="fa-solid fa-circle-minus"></i> ลาเพิ่ม</span>`;
                 } else {
-                    // สถานะปฏิบัติงานปกติ
-                    btn.className = "py-1.5 px-1 bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 rounded-lg text-[10px] font-semibold flex flex-col items-center justify-center transition-all";
+                    btn.className = "py-2 px-1 bg-slate-50 hover:bg-slate-150 text-slate-600 border border-slate-200/70 rounded-xl text-[11px] font-semibold flex flex-col items-center justify-center transition-all hover:bg-slate-100";
                     btn.onclick = () => toggleManualLeave(name);
-                    btn.innerHTML = `<span>${name}</span><span class="text-[8px] text-slate-400">ปกติ</span>`;
+                    btn.innerHTML = `<span>${name}</span><span class="text-[9px] text-slate-400">ปกติ</span>`;
                 }
                 manualContainer.appendChild(btn);
             });
@@ -1419,14 +1196,14 @@
                 if (cell.classList.contains("bg-slate-50")) continue;
 
                 if (i === targetIndex) {
-                    cell.className = "min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative border-teal-600 ring-2 ring-teal-500/20 bg-teal-50/10";
+                    cell.className = "min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative border-teal-600 ring-2 ring-teal-500/20 bg-teal-50/10 shadow-sm";
                 } else {
                     cell.className = "min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative border-slate-100 bg-white hover:border-teal-200 hover:shadow-md";
                 }
             }
         }
 
-        // ----------------- CSV EXPORT TO GOOGLE CALENDAR -----------------
+        // ----------------- CSV EXPORT (DEPRECATED BUT MAINTAINED) -----------------
         function exportToCSV() {
             const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
             const csvRows = [];
@@ -1472,7 +1249,20 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showToast("ส่งออกตารางงานไปยังไฟล์ CSV สำหรับ Import เข้า Google Calendar สำเร็จ!");
+            showToast("ส่งออกตารางงานไปยังไฟล์ CSV สำเร็จ");
+        }
+
+        function loadMockData() {
+            leaveRecords = {
+                "2026-07-02": ["หลิว"],
+                "2026-07-03": ["เบิด", "แอ๋ม"],
+                "2026-07-09": ["แปง"],
+                "2026-07-13": ["แปง", "กิ๊ม"],
+                "2026-07-14": ["แปง", "กิ๊ม"]
+            };
+            showToast("สลับเปลี่ยนใช้ระบบจำลองข้อมูลเรียบร้อย");
+            updateCalendar();
+            selectDate(selectedDateStr);
         }
     </script>
 </body>
