@@ -151,7 +151,6 @@
 
                     <!-- Leaves status block -->
                     <div id="detail-leaves-block" class="mb-4 hidden">
-                        <h3 class="text-xs font-bold text-rose-600 uppercase mb-2"><i class="fa-solid fa-plane-departure mr-1"></i> ผู้ขอลาหยุด</h3>
                         <div class="flex flex-wrap gap-1.5" id="detail-leaves-container">
                             <!-- Leave pill tags -->
                         </div>
@@ -162,13 +161,9 @@
                         <!-- Dynamic list of positions and personnel -->
                     </div>
 
-                    <!-- Logs & Notes Area -->
-                    <div class="mt-5 pt-4 border-t border-slate-100" id="detail-logs-block">
-                        <h3 class="text-xs font-bold text-slate-500 uppercase mb-2">บันทึกการจัดสรรประจำวัน</h3>
-                        <div class="text-[11px] text-slate-600 bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1.5" id="detail-logs-container">
-                            <!-- Log lists -->
-                        </div>
-                    </div>
+                    <!-- Logs & Notes Area (Permanently hidden per request) -->
+                    <div id="detail-logs-block" class="hidden"></div>
+                    <div id="detail-logs-container" class="hidden"></div>
                 </div>
             </div>
 
@@ -1118,11 +1113,13 @@
                     <span>พักผ่อนวันหยุด: ${result.reason}</span>
                 `;
                 listContainer.appendChild(offBox);
-                document.getElementById("detail-logs-block").classList.add("hidden");
+                const logBlock = document.getElementById("detail-logs-block");
+                if (logBlock) logBlock.classList.add("hidden");
                 return;
             }
 
-            document.getElementById("detail-logs-block").classList.remove("hidden");
+            const logBlock = document.getElementById("detail-logs-block");
+            if (logBlock) logBlock.classList.add("hidden");
 
             const roleOrder = ['OPD1', 'OPD2', 'IPD', 'verify', 'NCD', 'rider', 'ARV'];
 
