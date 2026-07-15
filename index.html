@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบตารางปฏิบัติราชการและการสลับเวรอัจฉริยะ</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter & Sarabun -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Inter, Kanit & Sarabun -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- PapaParse for CSV Parsing -->
@@ -16,6 +18,9 @@
     <style>
         body {
             font-family: 'Sarabun', 'Inter', sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            min-height: 100vh;
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
@@ -31,24 +36,861 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        /* ===== CSS FOR TAB 1: Leave Calendar (Scoped to prevent conflicts) ===== */
+        .leave-calendar-theme {
+            --bg: #F4F2F9; 
+            --paper: #FFFFFF;
+            --ink: #2C243B; 
+            --muted: #7A708A; 
+            --border: #E6E2F0; 
+            --accent: #8B5CF6; 
+            --accent-dark: #6D28D9; 
+            --accent-soft: #F5F3FF; 
+            --accent2: #EC4899; 
+            --accent2-soft: #FDF2F8; 
+            --sun: #F59E0B;
+            --sun-soft: #FEF3C7;
+            --danger: #EF4444;
+            
+            box-sizing: border-box;
+            background: 
+                radial-gradient(circle at 10% 0%, #F5F3FF 0%, transparent 45%), 
+                radial-gradient(circle at 90% 10%, #FDF2F8 0%, transparent 40%), 
+                var(--bg);
+            color: var(--ink);
+            padding: 28px 16px 60px;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .leave-calendar-theme * {
+            box-sizing: border-box;
+        }
+
+        .leave-calendar-theme h1, 
+        .leave-calendar-theme h2, 
+        .leave-calendar-theme h3, 
+        .leave-calendar-theme .display {
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+        }
+        
+        .leave-calendar-theme .wrap {
+            max-width: 1320px;
+            margin: 0 auto;
+        }
+        
+        .leave-calendar-theme header.top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        
+        .leave-calendar-theme header.top h1 {
+            font-size: 27px;
+            font-weight: 700;
+            background: linear-gradient(100deg, var(--accent-dark), var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .leave-calendar-theme header.top p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+        
+        .leave-calendar-theme .layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        
+        @media (max-width: 820px) {
+            .leave-calendar-theme .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .leave-calendar-theme .panel {
+            background: var(--paper);
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 6px 18px rgba(44,36,59,0.05);
+        }
+        
+        .leave-calendar-theme .panel h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            color: var(--ink);
+        }
+        
+        .leave-calendar-theme label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin: 12px 0 5px;
+        }
+        
+        .leave-calendar-theme select, 
+        .leave-calendar-theme input, 
+        .leave-calendar-theme textarea {
+            width: 100%;
+            min-width: 0;
+            padding: 9px 10px;
+            border-radius: 9px;
+            border: 1.5px solid var(--border);
+            font-family: 'Sarabun', sans-serif;
+            font-size: 14px;
+            color: var(--ink);
+            background: #FDFDFD;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .leave-calendar-theme select:focus, 
+        .leave-calendar-theme input:focus, 
+        .leave-calendar-theme textarea:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 1px;
+            border-color: var(--accent);
+        }
+        
+        .leave-calendar-theme input[type="date"] {
+            min-height: 40px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .leave-calendar-theme input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            padding: 2px;
+            margin-left: 4px;
+            filter: invert(40%) sepia(80%) saturate(1200%) hue-rotate(230deg) brightness(95%) contrast(95%);
+        }
+        
+        .leave-calendar-theme .row2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        @media (max-width: 420px) {
+            .leave-calendar-theme .row2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .leave-calendar-theme textarea {
+            resize: vertical;
+            min-height: 50px;
+        }
+        
+        .leave-calendar-theme button.primary {
+            margin-top: 16px;
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #fff;
+            border: none;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(139,92,246,0.3);
+            transition: transform .12s ease, box-shadow .12s ease;
+        }
+        
+        .leave-calendar-theme button.primary:hover {
+            transform: translateY(-1px); 
+            box-shadow: 0 8px 18px rgba(139,92,246,0.4);
+        }
+        
+        .leave-calendar-theme button.primary:active {
+            transform: translateY(0);
+        }
+        
+        .leave-calendar-theme button.secondary {
+            margin-top: 8px;
+            width: 100%;
+            background: #E6E2F0;
+            color: var(--ink);
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background .12s ease;
+        }
+        
+        .leave-calendar-theme button.secondary:hover {
+            background: #D9D5E5;
+        }
+
+        .leave-calendar-theme .error-msg {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .leave-calendar-theme .dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            flex: none;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+        }
+
+        /* Leave Calendar Day Detail */
+        .leave-calendar-theme .day-detail {
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: 10px;
+            background: var(--accent-soft);
+            display: none;
+        }
+        
+        .leave-calendar-theme .day-detail h4 {
+            font-family: 'Kanit', sans-serif;
+            font-size: 14px;
+            margin: 0 0 8px;
+            color: var(--accent-dark);
+        }
+        
+        .leave-calendar-theme .detail-entry {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 7px 9px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        
+        .leave-calendar-theme .detail-entry .info {
+            flex: 1;
+        }
+        
+        .leave-calendar-theme .detail-entry .actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .leave-calendar-theme .detail-entry .edit {
+            border: none;
+            background: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+        }
+        
+        .leave-calendar-theme .detail-entry .del {
+            border: none;
+            background: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        /* Leave Calendar List Panel Table */
+        .leave-calendar-theme .list-panel {
+            margin-top: 20px;
+        }
+        
+        .leave-calendar-theme table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+        
+        .leave-calendar-theme th, 
+        .leave-calendar-theme td {
+            text-align: left;
+            padding: 9px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .leave-calendar-theme th {
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .leave-calendar-theme .name-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .leave-calendar-theme .empty-note {
+            color: var(--muted);
+            font-size: 13px;
+            padding: 14px 2px;
+        }
+        
+        .leave-calendar-theme .edit-row {
+            border: none;
+            background: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 13px;
+            margin-right: 8px;
+        }
+        
+        .leave-calendar-theme .del-row {
+            border: none;
+            background: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 15px;
+        }
+        
+        .leave-calendar-theme .list-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        
+        .leave-calendar-theme .list-panel-head-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .leave-calendar-theme .list-panel-head-title h3 {
+            margin-bottom: 0;
+        }
+        
+        .leave-calendar-theme .btn-toggle-list {
+            border: 1px solid var(--border);
+            background: var(--paper);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--muted);
+            font-family: 'Sarabun', sans-serif;
+            transition: background .12s;
+        }
+        
+        .leave-calendar-theme .btn-toggle-list:hover {
+            background: var(--accent-soft);
+        }
+        
+        .leave-calendar-theme .sync-badge {
+            font-size: 11.5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+            white-space: nowrap;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .leave-calendar-theme .sync-badge.err {
+            background: var(--accent2-soft); 
+            color: #B5482F;
+        }
+        
+        .leave-calendar-theme .sync-badge.warn {
+            background: var(--sun-soft); 
+            color: #D9791A;
+        }
+
+        .leave-calendar-theme .storage-note {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* Leave Calendar Multi-select Checks */
+        .leave-calendar-theme .name-checks {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        
+        .leave-calendar-theme .name-check {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13.5px;
+            padding: 6px 7px;
+            border-radius: 7px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            background: #FBFCFB;
+            user-select: none;
+        }
+        
+        .leave-calendar-theme .name-check input {
+            width: auto;
+            margin: 0;
+        }
+        
+        .leave-calendar-theme .name-check.checked {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        /* Leave Calendar Date Mode Radio Tabs */
+        .leave-calendar-theme .mode-tabs {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        
+        .leave-calendar-theme .mode-tab {
+            flex: 1;
+            text-align: center;
+            font-size: 12px;
+            padding: 7px 4px;
+            border-radius: 7px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            color: var(--muted);
+            background: #FBFCFB;
+        }
+        
+        .leave-calendar-theme .mode-tab.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .leave-calendar-theme .date-mode-panel {
+            display: none;
+        }
+        
+        .leave-calendar-theme .date-mode-panel.active {
+            display: block;
+        }
+        
+        .leave-calendar-theme .add-date-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        
+        .leave-calendar-theme .add-date-row input {
+            flex: 1;
+        }
+        
+        .leave-calendar-theme .add-date-row button {
+            flex: none;
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .leave-calendar-theme .add-date-row button:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+        
+        .leave-calendar-theme .date-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        
+        .leave-calendar-theme .date-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+            font-size: 12.5px;
+            padding: 4px 6px 4px 10px;
+            border-radius: 14px;
+        }
+        
+        .leave-calendar-theme .date-chip button {
+            border: none;
+            background: none;
+            color: var(--accent-dark);
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1;
+            padding: 2px;
+        }
+
+        /* ===== Single Month Calendar Styles inside Leave Calendar ===== */
+        .leave-calendar-theme .months-wrap {
+            position: relative;
+            padding-top: 34px;
+        }
+        
+        .leave-calendar-theme .rings {
+            position: absolute;
+            top: -12px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-evenly;
+            padding: 0 30px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .leave-calendar-theme .ring {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #fff, var(--accent-soft) 60%, var(--accent) 100%);
+            border: 3px solid var(--bg);
+        }
+        
+        .leave-calendar-theme .nav-btns {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .leave-calendar-theme .nav-btns button {
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-family: 'Kanit', sans-serif;
+        }
+        
+        .leave-calendar-theme .nav-btns button:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+        
+        .leave-calendar-theme .months-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .leave-calendar-theme .months-head .range-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--accent-dark);
+        }
+        
+        .leave-calendar-theme .months-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        
+        .leave-calendar-theme .month-card {
+            background: var(--paper);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+        }
+        
+        .leave-calendar-theme .month-card .m-title {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .leave-calendar-theme .m-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7,1fr);
+            margin-bottom: 4px;
+        }
+        
+        .leave-calendar-theme .m-weekdays div {
+            text-align: center;
+            font-size: 11.5px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        
+        .leave-calendar-theme .m-weekdays div.sun {
+            color: var(--accent2);
+        }
+        
+        .leave-calendar-theme .m-weekdays div.sat {
+            color: #5B7DB1;
+        }
+        
+        .leave-calendar-theme .m-grid {
+            display: grid;
+            grid-template-columns: repeat(7,1fr);
+            gap: 4px;
+        }
+        
+        .leave-calendar-theme .m-day {
+            min-height: 78px;
+            border-radius: 7px;
+            border: 1px solid transparent;
+            padding: 4px 4px 3px;
+            cursor: pointer;
+            background: #FCFDFC;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            transition: box-shadow .12s ease;
+            overflow: hidden;
+        }
+        
+        .leave-calendar-theme .m-day:hover {
+            box-shadow: 0 0 0 2px var(--accent-soft) inset;
+        }
+        
+        .leave-calendar-theme .m-day.outside {
+            opacity: .35;
+        }
+        
+        .leave-calendar-theme .m-day.today {
+            border-color: var(--accent); 
+            box-shadow: 0 0 0 2px var(--accent-soft) inset;
+        }
+        
+        .leave-calendar-theme .m-day.holiday {
+            background: var(--sun-soft);
+        }
+        
+        .leave-calendar-theme .m-day .m-num {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+        
+        .leave-calendar-theme .m-day.sunday .m-num {
+            color: var(--accent2);
+        }
+        
+        .leave-calendar-theme .m-day.saturday .m-num {
+            color: #5B7DB1;
+        }
+        
+        .leave-calendar-theme .m-day.holiday .m-num {
+            color: #D9791A;
+        }
+        
+        .leave-calendar-theme .m-entries {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            width: 100%;
+        }
+        
+        .leave-calendar-theme .m-entry {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            overflow: hidden;
+        }
+        
+        .leave-calendar-theme .m-entry .dot-inline {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex: none;
+        }
+        
+        .leave-calendar-theme .m-entry-name {
+            font-size: 10px;
+            line-height: 1.2;
+            color: var(--ink);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .leave-calendar-theme .m-more {
+            font-size: 9.5px;
+            color: var(--muted);
+            margin-top: 1px;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- HEADER -->
-    <header class="bg-gradient-to-r from-teal-800 to-cyan-900 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <!-- UNIFIED DASHBOARD NAVIGATION HEADER -->
+    <header class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white shadow-xl sticky top-0 z-50 border-b border-amber-500/20">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-white/10 rounded-xl backdrop-blur-md">
-                    <i class="fa-solid fa-calendar-check text-2xl text-teal-300"></i>
+                <div class="p-2.5 bg-amber-500/10 rounded-xl backdrop-blur-md border border-amber-500/20">
+                    <i class="fa-solid fa-users-gear text-2xl text-amber-400"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg md:text-xl font-bold tracking-wide">ระบบตารางปฏิบัติราชการและการสลับเวรอัจฉริยะ</h1>
-                    <p class="text-xs text-teal-200/90 font-light mt-0.5">ระบบคำนวณและสลับตำแหน่งหมุนเวียนเวรตามมาตรฐานปฏิบัติงาน</p>
+                    <h1 class="text-base md:text-lg font-bold tracking-wide">ระบบจัดการกำลังพลและจัดเวรอัจฉริยะ</h1>
+                    <p class="text-[11px] text-amber-300/80 font-light mt-0.5">ระบบบริการจัดการวันหยุดและการหมุนเวียนเวรตามมาตรฐานปฏิบัติราชการ</p>
                 </div>
             </div>
             
-            <!-- Hidden connection controls to satisfy JS but hide from UI per images -->
+            <!-- Navigation Tabs Switching Area -->
+            <div class="flex bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 backdrop-blur-sm shadow-inner shrink-0">
+                <button id="tab-btn-1" onclick="switchTab('tab-1')" class="px-4 py-2 text-xs md:text-sm font-semibold rounded-lg bg-amber-500 text-slate-950 shadow-md transition-all duration-200 flex items-center gap-2">
+                    <i class="fa-solid fa-plane-departure"></i> ปฏิทินวันลา
+                </button>
+                <button id="tab-btn-2" onclick="switchTab('tab-2')" class="px-4 py-2 text-xs md:text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 flex items-center gap-2 ml-1">
+                    <i class="fa-solid fa-calendar-check"></i> ระบบจัดตารางเวรและการสลับเวร
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE PORTAL VIEWPORTS -->
+    <main class="flex-grow w-full">
+
+        <!-- ==================== TAB 1: LEAVE CALENDAR ==================== -->
+        <div id="tab-1" class="tab-content leave-calendar-theme">
+            <div class="wrap">
+                <header class="top">
+                    <div>
+                        <h1>ปฏิทินวันลา</h1>
+                        <p><strong style="color: var(--accent-dark);"></strong></p>
+                    </div>
+                </header>
+
+                <div class="layout">
+                    <div>
+                        <div class="panel" id="form-panel">
+                            <h3 id="form-title">เพิ่มวันลา</h3>
+                            <label>ชื่อ (เลือกได้มากกว่า 1 คน)</label>
+                            <div class="name-checks" id="name-checks"></div>
+
+                            <label>รูปแบบวันที่</label>
+                            <div class="mode-tabs" id="mode-tabs">
+                                <div class="mode-tab active" data-mode="single">วันเดียว</div>
+                                <div class="mode-tab" data-mode="range">ช่วงวันที่ต่อเนื่อง</div>
+                                <div class="mode-tab" data-mode="multi">หลายวันไม่ติดกัน</div>
+                            </div>
+
+                            <div class="date-mode-panel active" id="mode-single">
+                                <label for="f-single-date">วันที่ลา</label>
+                                <input type="date" id="f-single-date">
+                            </div>
+
+                            <div class="date-mode-panel" id="mode-range">
+                                <div class="row2">
+                                    <div>
+                                        <label for="f-start">วันที่เริ่ม</label>
+                                        <input type="date" id="f-start">
+                                    </div>
+                                    <div>
+                                        <label for="f-end">วันที่สิ้นสุด</label>
+                                        <input type="date" id="f-end">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="date-mode-panel" id="mode-multi">
+                                <label for="f-multi-date">เพิ่มวันที่ทีละวัน</label>
+                                <div class="add-date-row">
+                                    <input type="date" id="f-multi-date">
+                                    <button type="button" id="btn-add-date">+ เพิ่ม</button>
+                                </div>
+                                <div class="date-chips" id="date-chips"></div>
+                            </div>
+
+                            <label for="f-type">ประเภทการลา</label>
+                            <select id="f-type">
+                                <option>ลาป่วย</option>
+                                <option>ลากิจ</option>
+                                <option>ลาพักผ่อน</option>
+                                <option>ประชุม</option>
+                                <option>อื่นๆ</option>
+                            </select>
+
+                            <label for="f-period">ช่วงเวลา</label>
+                            <select id="f-period">
+                                <option value="เต็มวัน">เต็มวัน</option>
+                                <option value="เช้า">ครึ่งวันเช้า</option>
+                                <option value="บ่าย">ครึ่งวันบ่าย</option>
+                                <option value="custom">กำหนดเอง...</option>
+                            </select>
+                            <input type="text" id="f-period-custom" placeholder="เช่น 13:00 - 15:00" style="display:none;">
+
+                            <label for="f-note">หมายเหตุ (ถ้ามี)</label>
+                            <textarea id="f-note" placeholder=""></textarea>
+
+                            <div class="error-msg" id="err"></div>
+                            <button class="primary" id="btn-save">บันทึกวันลา</button>
+                            <button class="secondary" id="btn-cancel-edit" style="display:none;">ยกเลิกการแก้ไข</button>
+                        </div>
+                        <div class="storage-note" id="connection-note"></div>
+                    </div>
+
+                    <div>
+                        <div class="months-wrap">
+                            <div class="rings">
+                                <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+                                <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+                            </div>
+                            <div class="months-head">
+                                <div class="range-title" id="range-title"></div>
+                                <div class="nav-btns">
+                                    <button id="prev-month">‹</button>
+                                    <button id="today-btn" style="font-size:12px;">วันนี้</button>
+                                    <button id="next-month">›</button>
+                                </div>
+                            </div>
+                            <div class="months-row" id="months-row"></div>
+
+                            <div class="day-detail" id="day-detail">
+                                <h4 id="detail-title"></h4>
+                                <div id="detail-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="panel list-panel">
+                            <div class="list-panel-head">
+                                <div class="list-panel-head-title">
+                                    <h3>รายการวันลา</h3>
+                                    <button class="btn-toggle-list" id="btn-toggle-list">แสดง</button>
+                                </div>
+                                <span class="sync-badge" id="sync-badge">กำลังเตรียมระบบ...</span>
+                            </div>
+                            <div id="list-wrap" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2: DUTY ROTATION SYSTEM ==================== -->
+        <div id="tab-2" class="tab-content hidden">
+            <!-- HEADER (Deleted redundant header block per image_3d7061.png instructions to keep layout extremely clean) -->
             <div class="hidden">
                 <input type="text" id="sheet-url-input" value="https://docs.google.com/spreadsheets/d/10euYdImtO7uMZlVK5MSwkU5kJKkBBi3Phuv5c2fMyMI/edit?usp=sharing">
                 <button onclick="syncGoogleSheets()" id="sync-icon-parent"><i class="fa-solid fa-sync" id="sync-icon"></i></button>
@@ -58,144 +900,1007 @@
                 <div id="sync-records-count"></div>
                 <div id="sync-debug-box"></div>
             </div>
-        </div>
-    </header>
 
-    <!-- MAIN CONTAINER -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
-        
-        <!-- TOP ACTIONS & MONTH NAVIGATION -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <!-- Month Picker -->
-            <div class="flex items-center gap-2">
-                <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors">
-                    <i class="fa-solid fa-chevron-left text-sm"></i>
-                </button>
-                <select id="month-select" onchange="onMonthSelectChange()" class="bg-slate-50 border border-slate-200 text-sm font-semibold rounded-xl px-3 py-2 text-slate-700 outline-none focus:ring-2 focus:ring-teal-500">
-                    <!-- Dynamic Month Options -->
-                </select>
-                <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors">
-                    <i class="fa-solid fa-chevron-right text-sm"></i>
-                </button>
-            </div>
-
-            <!-- Hidden action buttons and indicator to keep UI extremely clean per request -->
-            <div class="hidden">
-                <button onclick="exportToCSV()"></button>
-                <button onclick="loadMockData()"></button>
-                <!-- Hidden Connection indicator (image_456039.png) -->
-                <div id="connection-status-badge">เชื่อมต่อฐานข้อมูล Google Sheets เรียลไทม์</div>
-            </div>
-        </div>
-
-        <!-- DASHBOARD GRID LAYOUT (Optimized to 2 columns: Calendar on left, Daily detail on right) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- LEFT COLUMN: HORIZONTAL TOGGLES & CALENDAR GRID (8 cols) -->
-            <div class="lg:col-span-8 flex flex-col gap-5">
+            <!-- MAIN CONTAINER -->
+            <div class="max-w-7xl w-full mx-auto px-4 py-6 flex flex-col gap-6">
                 
-                <!-- NEW LOCATION: Horizontal Manual Leave Toggles Section -->
-                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-3">
-                        <h3 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
-                            <i class="fa-solid fa-user-pen text-teal-600 text-sm"></i>
-                            <span>ติ๊กคนลาเพิ่มในวันนี้ (ไม่ต้องลงชีต)</span>
-                        </h3>
-                        <span id="toggles-date-label" class="text-[11px] bg-teal-50 text-teal-700 font-semibold px-2.5 py-0.5 rounded-lg border border-teal-100/50">
-                            -
-                        </span>
+                <!-- TOP ACTIONS & MONTH NAVIGATION -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <!-- Month Picker -->
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors">
+                            <i class="fa-solid fa-chevron-left text-sm"></i>
+                        </button>
+                        <select id="month-select" onchange="onMonthSelectChange()" class="bg-slate-50 border border-slate-200 text-sm font-semibold rounded-xl px-3 py-2 text-slate-700 outline-none focus:ring-2 focus:ring-amber-500">
+                            <!-- Dynamic Month Options -->
+                        </select>
+                        <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors">
+                            <i class="fa-solid fa-chevron-right text-sm"></i>
+                        </button>
                     </div>
-                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="manual-leave-toggles">
-                        <!-- Dynamic Manual Toggles rendered as horizontal wide row -->
+
+                    <!-- Hidden action buttons and indicator to keep UI extremely clean per request -->
+                    <div class="hidden">
+                        <button onclick="exportToCSV()"></button>
+                        <button onclick="loadMockData()"></button>
+                        <!-- Hidden Connection indicator -->
+                        <div id="connection-status-badge">เชื่อมต่อฐานข้อมูล Google Sheets เรียลไทม์</div>
                     </div>
                 </div>
 
-                <!-- Calendar Card -->
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex-grow flex flex-col">
-                    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
-                        <h2 class="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
-                            <i class="fa-solid fa-calendar-days text-teal-600"></i>
-                            <span id="calendar-title-label">ปฏิทินปฏิบัติงาน</span>
-                        </h2>
-                        <span id="holiday-count-badge" class="text-[10px] sm:text-xs bg-rose-50 text-rose-700 font-medium px-2.5 py-1 rounded-full border border-rose-100">
-                            0 วันหยุดราชการในเดือนนี้
-                        </span>
-                    </div>
+                <!-- DASHBOARD GRID LAYOUT (Optimized to 2 columns: Calendar on left, Daily detail on right) -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- LEFT COLUMN: HORIZONTAL TOGGLES & CALENDAR GRID (8 cols) -->
+                    <div class="lg:col-span-8 flex flex-col gap-5">
+                        
+                        <!-- NEW LOCATION: Horizontal Manual Leave Toggles Section -->
+                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-3">
+                                <h3 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                                    <i class="fa-solid fa-user-pen text-amber-500 text-sm"></i>
+                                    <span>ติ๊กคนลาเพิ่มในวันนี้ (ไม่ต้องลงชีต)</span>
+                                </h3>
+                                <span id="toggles-date-label" class="text-[11px] bg-amber-50 text-amber-700 font-semibold px-2.5 py-0.5 rounded-lg border border-amber-100/50">
+                                    -
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2" id="manual-leave-toggles">
+                                <!-- Dynamic Manual Toggles rendered as horizontal wide row -->
+                            </div>
+                        </div>
 
-                    <!-- Calendar Week Header -->
-                    <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">
-                        <div>อา.</div>
-                        <div>จ.</div>
-                        <div>อ.</div>
-                        <div>พ.</div>
-                        <div>พฤ.</div>
-                        <div>ศ.</div>
-                        <div>ส.</div>
-                    </div>
+                        <!-- Calendar Card -->
+                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex-grow flex flex-col">
+                            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                                <h2 class="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
+                                    <i class="fa-solid fa-calendar-days text-amber-500"></i>
+                                    <span id="calendar-title-label">ปฏิทินปฏิบัติงาน</span>
+                                </h2>
+                                <span id="holiday-count-badge" class="text-[10px] sm:text-xs bg-rose-50 text-rose-700 font-medium px-2.5 py-1 rounded-full border border-rose-100">
+                                    0 วันหยุดราชการในเดือนนี้
+                                </span>
+                            </div>
 
-                    <!-- Calendar Grid Container -->
-                    <div class="grid grid-cols-7 gap-1.5 flex-grow" id="calendar-grid">
-                        <!-- Dynamic Calendar Cells -->
-                    </div>
-                </div>
-            </div>
+                            <!-- Calendar Week Header -->
+                            <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">
+                                <div class="text-rose-500">อา.</div>
+                                <div>จ.</div>
+                                <div>อ.</div>
+                                <div>พ.</div>
+                                <div>พฤ.</div>
+                                <div>ศ.</div>
+                                <div class="text-blue-500">ส.</div>
+                            </div>
 
-            <!-- RIGHT COLUMN: DAILY DETAIL & OVERVIEW (4 cols) -->
-            <div class="lg:col-span-4 flex flex-col gap-6">
-                <!-- Daily Inspector Panel -->
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex-grow flex flex-col">
-                    <div class="border-b border-slate-100 pb-3 mb-4">
-                        <span id="detail-weekday" class="text-xs font-bold text-slate-400 tracking-wider uppercase">วันจันทร์</span>
-                        <h2 id="detail-date" class="text-base sm:text-lg font-extrabold text-slate-800">1 กรกฎาคม 2569</h2>
-                    </div>
-
-                    <!-- Leaves status block -->
-                    <div id="detail-leaves-block" class="mb-4 hidden">
-                        <div class="flex flex-wrap gap-1.5" id="detail-leaves-container">
-                            <!-- Leave pill tags -->
+                            <!-- Calendar Grid Container -->
+                            <div class="grid grid-cols-7 gap-1.5 flex-grow" id="calendar-grid">
+                                <!-- Dynamic Calendar Cells -->
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Shift details container -->
-                    <div class="flex-grow flex flex-col gap-2.5" id="detail-roles-list">
-                        <!-- Dynamic list of positions and personnel -->
+                    <!-- RIGHT COLUMN: DAILY DETAIL & OVERVIEW (4 cols) -->
+                    <div class="lg:col-span-4 flex flex-col gap-6">
+                        <!-- Daily Inspector Panel -->
+                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex-grow flex flex-col min-h-[450px]">
+                            <div class="border-b border-slate-100 pb-3 mb-4">
+                                <span id="detail-weekday" class="text-xs font-bold text-slate-400 tracking-wider uppercase">วันจันทร์</span>
+                                <h2 id="detail-date" class="text-base sm:text-lg font-extrabold text-slate-800">1 กรกฎาคม 2569</h2>
+                            </div>
+
+                            <!-- Leaves status block -->
+                            <div id="detail-leaves-block" class="mb-4 hidden">
+                                <div class="flex flex-wrap gap-1.5" id="detail-leaves-container">
+                                    <!-- Leave pill tags -->
+                                </div>
+                            </div>
+
+                            <!-- Shift details container -->
+                            <div class="flex-grow flex flex-col gap-2.5" id="detail-roles-list">
+                                <!-- Dynamic list of positions and personnel -->
+                            </div>
+
+                            <!-- Logs & Notes Area (Permanently hidden per request) -->
+                            <div id="detail-logs-block" class="hidden"></div>
+                            <div id="detail-logs-container" class="hidden"></div>
+                        </div>
                     </div>
 
-                    <!-- Logs & Notes Area (Permanently hidden per request) -->
-                    <div id="detail-logs-block" class="hidden"></div>
-                    <div id="detail-logs-container" class="hidden"></div>
                 </div>
-            </div>
 
-        </div>
-
-        <!-- BOTTOM ROW: STAFF STATS (Moved here to the very end of page in horizontal grid format) -->
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mt-2">
-            <h2 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
-                <span class="flex items-center gap-2">
-                    <i class="fa-solid fa-chart-bar text-teal-600 text-base"></i>
-                    <span>ภาระงานรวมรายบุคคล (เวร/วัน)</span>
-                </span>
-                <span class="text-[10px] bg-slate-100 text-slate-500 font-normal px-2.5 py-1 rounded-lg" id="stats-month-label">กรกฎาคม</span>
-            </h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="staff-stats-container">
-                <!-- Dynamic Staff Stats Cards rendered horizontally -->
+                <!-- BOTTOM ROW: STAFF STATS (Permanently hidden as requested) -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mt-2 hidden">
+                    <h2 class="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-chart-bar text-amber-500 text-base"></i>
+                            <span>ภาระงานรวมรายบุคคล (เวร/วัน)</span>
+                        </span>
+                        <span class="text-[10px] bg-slate-100 text-slate-500 font-normal px-2.5 py-1 rounded-lg" id="stats-month-label">กรกฎาคม</span>
+                    </h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="staff-stats-container">
+                        <!-- Dynamic Staff Stats Cards -->
+                    </div>
+                </div>
             </div>
         </div>
 
     </main>
 
-    <!-- FOOTER (Completely cleared copyright text as per image_456018.png instructions) -->
-    <footer class="py-2 text-center text-xs mt-6">
-        <!-- Text removed to satisfy requirement -->
+    <!-- FOOTER -->
+    <footer class="py-4 text-center text-xs mt-6 text-slate-400">
+        <!-- Copyright text omitted as per instruction -->
     </footer>
 
     <!-- Global Toast Component -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-950 text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300">
-        <i class="fa-solid fa-circle-info text-teal-400" id="toast-icon"></i>
+        <i class="fa-solid fa-circle-info text-amber-400" id="toast-icon"></i>
         <span id="toast-message">ข้อความแจ้งเตือนจากระบบ</span>
     </div>
 
+    <!-- TAB CONTROLLER SCRIPT -->
+    <script>
+        function switchTab(tabId) {
+            // Hide both tab content wrappers
+            document.querySelectorAll('.tab-content').forEach(function(el) {
+                el.classList.add('hidden');
+            });
+            
+            // Toggle active styles on navbar buttons
+            const btn1 = document.getElementById('tab-btn-1');
+            const btn2 = document.getElementById('tab-btn-2');
+            
+            btn1.className = "px-4 py-2 text-xs md:text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 flex items-center gap-2";
+            btn2.className = "px-4 py-2 text-xs md:text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all duration-200 flex items-center gap-2 ml-1";
+            
+            // Show selected tab container and apply active styling (Orange-Yellow tone)
+            const target = document.getElementById(tabId);
+            if(target) {
+                target.classList.remove('hidden');
+            }
+            
+            if(tabId === 'tab-1') {
+                btn1.className = "px-4 py-2 text-xs md:text-sm font-semibold rounded-lg bg-amber-500 text-slate-950 shadow-md transition-all duration-200 flex items-center gap-2";
+            } else if(tabId === 'tab-2') {
+                btn2.className = "px-4 py-2 text-xs md:text-sm font-semibold rounded-lg bg-amber-500 text-slate-950 shadow-md transition-all duration-200 flex items-center gap-2 ml-1";
+                // Trigger duty calendar re-render to ensure layout integrity
+                if(typeof updateCalendar === 'function') {
+                    updateCalendar();
+                }
+            }
+        }
+    </script>
+
+    <!-- ==================== TAB 1: SCRIPTS (Leave Calendar) ==================== -->
+    <script>
+    const SHEET_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwuLOucUiOatB1OAr8bmgXLbcYoNXM95eDlmotPv4WeTGYptNO2-iiTE5iHMSe7Cs_3uw/exec';
+
+    const PEOPLE = {
+      "แอ๋ม": { dot:"#E63946" },
+      "เพ็ญ": { dot:"#FFB300" },
+      "แปง":  { dot:"#16A34A" },
+      "กิ้ม": { dot:"#1D4ED8" },
+      "หลิว": { dot:"#9333EA" },
+      "เบิด": { dot:"#F97316" }
+    };
+    const THAI_MONTHS = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+      "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+    const THAI_DAYS = ["อา","จ","อ","พ","พฤ","ศ","ส"];
+
+    const pad = n => String(n).padStart(2,'0');
+    const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const parseISO = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+
+    // ==========================================
+    // ส่วนสร้างวันหยุดอัตโนมัติ (อัปเดตใหม่)
+    // ==========================================
+    const FIXED_HOLIDAYS = {
+      "01-01": "วันขึ้นปีใหม่",
+      "04-06": "วันจักรี",
+      "04-13": "วันสงกรานต์",
+      "04-14": "วันสงกรานต์",
+      "04-15": "วันสงกรานต์",
+      "05-01": "วันแรงงานแห่งชาติ",
+      "05-04": "วันฉัตรมงคล",
+      "06-03": "วันเฉลิมพระชนมพรรษาพระราชินี",
+      "07-28": "วันเฉลิมพระชนมพรรษา ร.10",
+      "08-12": "วันแม่แห่งชาติ",
+      "10-13": "วันนวมินทรมหาราช",
+      "10-23": "วันปิยมหาราช",
+      "12-05": "วันพ่อแห่งชาติ",
+      "12-10": "วันรัฐธรรมนูญ",
+      "12-31": "วันสิ้นปี"
+    };
+
+    const LUNAR_AND_SPECIAL_HOLIDAYS = {
+      2024: { "02-24": "วันมาฆบูชา", "05-10": "วันพืชมงคล", "05-22": "วันวิสาขบูชา", "07-20": "วันอาสาฬหบูชา", "07-21": "วันเข้าพรรษา" },
+      2025: { "02-12": "วันมาฆบูชา", "05-09": "วันพืชมงคล", "05-11": "วันวิสาขบูชา", "07-10": "วันอาสาฬหบูชา", "07-11": "วันเข้าพรรษา" },
+      2026: { "01-02": "วันหยุดพิเศษ (มติ ครม.)", "03-03": "วันมาฆบูชา", "05-13": "วันพืชมงคล", "05-31": "วันวิสาขบูชา", "07-29": "วันอาสาฬหบูชา", "07-30": "วันเข้าพรรษา" },
+      2027: { "02-20": "วันมาฆบูชา", "05-13": "วันพืชมงคล", "05-20": "วันวิสาขบูชา", "07-18": "วันอาสาฬหบูชา", "07-19": "วันเข้าพรรษา" },
+      2028: { "02-09": "วันมาฆบูชา", "05-11": "วันพืชมงคล", "05-08": "วันวิสาขบูชา", "07-06": "วันอาสาฬหบูชา", "07-07": "วันเข้าพรรษา" },
+      2029: { "02-28": "วันมาฆบูชา", "05-10": "วันพืชมงคล", "05-28": "วันวิสาขบูชา", "07-25": "วันอาสาฬหบูชา", "07-26": "วันเข้าพรรษา" },
+      2030: { "02-17": "วันมาฆบูชา", "05-09": "วันพืชมงคล", "05-17": "วันวิสาขบูชา", "07-14": "วันอาสาฬหบูชา", "07-15": "วันเข้าพรรษา" }
+    };
+
+    let _holidayCache = {};
+
+    function getHoliday(isoStr) {
+      const year = isoStr.split('-')[0];
+      
+      if (!_holidayCache[year]) {
+        const holidays = {};
+        
+        // 1. เพิ่มวันหยุดประจำปี (วันที่ตายตัว)
+        for (const [mmdd, name] of Object.entries(FIXED_HOLIDAYS)) {
+          holidays[`${year}-${mmdd}`] = name;
+        }
+        
+        // 2. เพิ่มวันหยุดจันทรคติ/วันหยุดพิเศษ ตามปีนั้นๆ
+        if (LUNAR_AND_SPECIAL_HOLIDAYS[year]) {
+          for (const [mmdd, name] of Object.entries(LUNAR_AND_SPECIAL_HOLIDAYS[year])) {
+            holidays[`${year}-${mmdd}`] = name;
+          }
+        }
+        
+        // 3. คำนวณวันหยุดชดเชยอัตโนมัติ (หากตกเสาร์-อาทิตย์ ให้ชดเชยวันจันทร์ หรือวันทำการถัดไป)
+        const allDates = Object.keys(holidays).sort();
+        const substitutions = {};
+        let songkranSubAdded = false;
+
+        for (const dateStr of allDates) {
+          const name = holidays[dateStr];
+          if (name.includes("ชดเชย") || name.includes("พิเศษ")) continue; 
+
+          const d = parseISO(dateStr);
+          const dow = d.getDay();
+          
+          // ตรงกับวันอาทิตย์ (0) หรือ วันเสาร์ (6)
+          if (dow === 0 || dow === 6) {
+            // เงื่อนไขพิเศษสำหรับสงกรานต์: ชดเชยแค่วันเดียวแม้จะชนเสาร์-อาทิตย์ 2 วัน
+            if (name === "วันสงกรานต์") {
+              if (songkranSubAdded) continue;
+              songkranSubAdded = true;
+            }
+
+            let nextDate = new Date(d);
+            while (true) {
+              nextDate.setDate(nextDate.getDate() + 1);
+              const nextDateStr = toISO(nextDate);
+              const nextDow = nextDate.getDay();
+              
+              // หาวันจันทร์-ศุกร์ถัดไป ที่ยังไม่ใช่วันหยุด หรือวันหยุดชดเชย
+              if (nextDow !== 0 && nextDow !== 6 && !holidays[nextDateStr] && !substitutions[nextDateStr]) {
+                substitutions[nextDateStr] = `ชดเชย${name}`;
+                break;
+              }
+            }
+          }
+        }
+        
+        // บันทึกลง Cache สำหรับปีนั้น
+        _holidayCache[year] = { ...holidays, ...substitutions };
+      }
+      
+      return _holidayCache[year][isoStr];
+    }
+    // ==========================================
+
+
+    let leaves = [];
+    let viewDate = new Date();
+    viewDate.setDate(1);
+    let selectedDayISO = null;
+    let dateMode = 'single';
+    let multiDates = [];
+    let editingLeaveId = null; 
+    let isListVisible = false; 
+
+    function formatThaiDate(isoStr) {
+      if (!isoStr) return '';
+      const [y, m, d] = isoStr.split('-').map(Number);
+      const THAI_SHORT_MONTHS = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+      return `${d} ${THAI_SHORT_MONTHS[m-1]} ${y+543}`;
+    }
+
+    function populateNameSelect(){
+      const wrap = document.getElementById('name-checks');
+      wrap.innerHTML = Object.keys(PEOPLE).map(n=>{
+        const c = PEOPLE[n] || {dot:'#999'};
+        return `<label class="name-check" data-name="${n}">
+          <input type="checkbox" value="${n}">
+          <span class="dot" style="background:${c.dot};"></span>
+          ${n}
+        </label>`;
+      }).join('');
+      wrap.querySelectorAll('.name-check').forEach(el=>{
+        const cb = el.querySelector('input');
+        cb.addEventListener('change', ()=> el.classList.toggle('checked', cb.checked));
+      });
+    }
+
+    function getSelectedNames(){
+      return Array.from(document.querySelectorAll('#name-checks input:checked')).map(cb=>cb.value);
+    }
+
+    function setupPeriodField(){
+      const sel = document.getElementById('f-period');
+      const custom = document.getElementById('f-period-custom');
+      sel.addEventListener('change', ()=>{
+        custom.style.display = sel.value === 'custom' ? 'block' : 'none';
+      });
+    }
+
+    function setupModeTabs(){
+      document.querySelectorAll('.mode-tab').forEach(tab=>{
+        tab.addEventListener('click', ()=>{
+          dateMode = tab.dataset.mode;
+          document.querySelectorAll('.mode-tab').forEach(t=>t.classList.toggle('active', t===tab));
+          document.getElementById('mode-single').classList.toggle('active', dateMode==='single');
+          document.getElementById('mode-range').classList.toggle('active', dateMode==='range');
+          document.getElementById('mode-multi').classList.toggle('active', dateMode==='multi');
+        });
+      });
+    }
+
+    function renderDateChips(){
+      const wrap = document.getElementById('date-chips');
+      wrap.innerHTML = multiDates.map((d,i)=>
+        `<span class="date-chip">${d}<button type="button" data-i="${i}">✕</button></span>`
+      ).join('');
+      wrap.querySelectorAll('button').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          multiDates.splice(Number(btn.dataset.i),1);
+          renderDateChips();
+        });
+      });
+    }
+
+    document.getElementById('btn-add-date').addEventListener('click', ()=>{
+      const val = document.getElementById('f-multi-date').value;
+      if(val && !multiDates.includes(val)){
+        multiDates.push(val);
+        multiDates.sort();
+        renderDateChips();
+        document.getElementById('f-multi-date').value = '';
+      }
+    });
+
+    let lastSyncDetail = '';
+
+    function setSyncBadge(state, detail){
+      const el = document.getElementById('sync-badge');
+      if(detail !== undefined) lastSyncDetail = detail;
+      if(!el) return;
+      
+      el.className = 'sync-badge';
+      if(state === 'ok'){
+        el.textContent = '☁️ ซิงก์แล้ว';
+      } else if(state === 'saving'){
+        el.textContent = '⏳ กำลังบันทึกข้อมูล...';
+        el.classList.add('warn');
+      } else if(state === 'local'){
+        el.textContent = '⚠️ โหมดออฟไลน์ (เปิดได้ทุกเครื่อง แต่ยังซิงก์ไม่ได้)';
+        el.classList.add('warn');
+      } else {
+        el.textContent = '❌ ซิงก์ล้มเหลว (แตะเพื่ออ่านวิธีแก้ไข)';
+        el.classList.add('err');
+      }
+    }
+
+    document.getElementById('sync-badge').addEventListener('click', ()=>{
+      if(!SHEET_WEB_APP_URL){
+        alert('ระบบไม่พบ URL สำหรับเชื่อมต่อฐานข้อมูล Google Sheets');
+      } else if(lastSyncDetail){
+        alert('รายละเอียดสถานะความขัดข้อง:\n\n' + lastSyncDetail);
+      } else {
+        alert('เชื่อมต่อกับชีต "calen" ของคุณเรียบร้อยและใช้งานได้ปกติ ข้อมูลอัปเดตแบบ Real-time ทั่วโลก!');
+      }
+    });
+
+    function sheetRowToLeave(r){
+      return {
+        id: String(r.id),
+        name: String(r.name),
+        start: String(r.start),
+        end: String(r.end),
+        type: String(r.type),
+        period: String(r.period),
+        note: String(r.note || '')
+      };
+    }
+
+    async function parseSheetResponse(resp){
+      const text = await resp.text();
+      const trimmed = text.trim();
+      if(trimmed.startsWith('<')){
+        throw new Error('Google Apps Script ตอบกลับเป็นหน้าเว็บ HTML แทนก้อนข้อมูล JSON');
+      }
+      try{
+        return JSON.parse(trimmed);
+      }catch(e){
+        throw new Error('ไม่สามารถแปลงข้อมูลที่ส่งกลับจาก Google Sheets เป็นรูปแบบ JSON ได้');
+      }
+    }
+
+    async function loadLeaves(){
+      let localCopy = [];
+      try{
+        const localRes = localStorage.getItem('leaves_backup');
+        localCopy = localRes ? JSON.parse(localRes) : [];
+      }catch(e){
+        localCopy = [];
+      }
+
+      if(!SHEET_WEB_APP_URL){
+        leaves = localCopy;
+        setSyncBadge('local');
+        return;
+      }
+
+      try{
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const resp = await fetch(SHEET_WEB_APP_URL, { 
+          method: 'GET',
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if(!resp.ok){
+          throw new Error(`เซิร์ฟเวอร์แจ้งข้อผิดพลาด: HTTP ${resp.status}`);
+        }
+        const rows = await parseSheetResponse(resp);
+        if(!Array.isArray(rows)) throw new Error('ข้อมูลที่ได้รับไม่ตรงตามโครงสร้าง');
+        
+        leaves = rows.map(sheetRowToLeave);
+        setSyncBadge('ok', '');
+        
+        localStorage.setItem('leaves_backup', JSON.stringify(leaves));
+      }catch(e){
+        console.error('การโหลดล้มเหลว ดึงแคชในเครื่องแสดงก่อน', e);
+        leaves = localCopy;
+        let errMsg = String(e.message || e);
+        if (errMsg.includes('aborted')) {
+          errMsg = 'การเชื่อมต่อหมดเวลา อินเทอร์เน็ตอาจขัดข้องชั่วคราว';
+        }
+        setSyncBadge('err', errMsg);
+      }
+    }
+
+    async function saveLeaves(){
+      setSyncBadge('saving');
+
+      try{
+        localStorage.setItem('leaves_backup', JSON.stringify(leaves));
+      }catch(e){
+        console.error('เขียนแคชลงเครื่องล้มเหลว', e);
+      }
+
+      if(!SHEET_WEB_APP_URL){
+        setSyncBadge('local');
+        return true;
+      }
+
+      try{
+        const resp = await fetch(SHEET_WEB_APP_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(leaves)
+        });
+        
+        if(!resp.ok){
+          throw new Error(`เซิร์ฟเวอร์เขียนบันทึกขัดข้อง: HTTP ${resp.status}`);
+        }
+        
+        const resJSON = await parseSheetResponse(resp);
+        if(resJSON && resJSON.status === 'success'){
+          setSyncBadge('ok', '');
+          return true;
+        } else {
+          throw new Error(resJSON.message || 'สคริปต์หลังบ้านรายงานการบันทึกล้มเหลว');
+        }
+      }catch(e){
+        console.error('ไม่สามารถส่งข้อมูลขึ้นระบบคลาวด์ได้', e);
+        setSyncBadge('err', String(e.message || e));
+        return false;
+      }
+    }
+
+    function leavesOnDate(iso){
+      const d = parseISO(iso);
+      return leaves.filter(l => parseISO(l.start) <= d && d <= parseISO(l.end));
+    }
+
+    function periodSuffix(period){
+      if(!period || period === 'เต็มวัน') return '';
+      return ` (${period})`;
+    }
+
+    function buildMonthCells(y, m){
+      const firstDay = new Date(y,m,1);
+      const startOffset = firstDay.getDay(); 
+      const daysInMonth = new Date(y,m+1,0).getDate();
+      const daysInPrevMonth = new Date(y,m,0).getDate();
+
+      const cells = [];
+      for(let i=startOffset-1;i>=0;i--){
+        cells.push({date:new Date(y,m-1,daysInPrevMonth-i), outside:true});
+      }
+      for(let d=1; d<=daysInMonth; d++){
+        cells.push({date:new Date(y,m,d), outside:false});
+      }
+      while(cells.length % 7 !== 0){
+        const last = cells[cells.length-1].date;
+        const next = new Date(last);
+        next.setDate(next.getDate()+1);
+        cells.push({date:next, outside:true});
+      }
+      return cells;
+    }
+
+    function renderMonths(){
+      const y = viewDate.getFullYear();
+      const m = viewDate.getMonth();
+      document.getElementById('range-title').textContent = `${THAI_MONTHS[m]} ${y+543}`;
+
+      const todayISO = toISO(new Date());
+      const row = document.getElementById('months-row');
+      row.innerHTML = '';
+
+      const card = document.createElement('div');
+      card.className = 'month-card';
+
+      const wk = document.createElement('div');
+      wk.className = 'm-weekdays';
+      wk.innerHTML = THAI_DAYS.map((dn,i)=>
+        `<div class="${i===0?'sun':i===6?'sat':''}">${dn}</div>`
+      ).join('');
+      card.appendChild(wk);
+
+      const grid = document.createElement('div');
+      grid.className = 'm-grid';
+
+      buildMonthCells(y,m).forEach(cell=>{
+        const iso = toISO(cell.date);
+        const dow = cell.date.getDay();
+        const dayLeaves = leavesOnDate(iso);
+        
+        // ใช้วิธีดึงข้อมูลวันหยุดจากระบบคำนวณอัตโนมัติ
+        const holidayName = getHoliday(iso); 
+
+        const div = document.createElement('div');
+        let cls = 'm-day';
+        if(cell.outside) cls += ' outside';
+        if(iso===todayISO) cls += ' today';
+        if(holidayName) cls += ' holiday';
+        if(dow===0) cls += ' sunday';
+        if(dow===6) cls += ' saturday';
+        div.className = cls;
+        div.title = holidayName ? holidayName : '';
+
+        let entriesHtml = '';
+        const maxShow = 4;
+        dayLeaves.slice(0,maxShow).forEach(l=>{
+          const c = PEOPLE[l.name] || {dot:'#999'};
+          const suffix = periodSuffix(l.period);
+          entriesHtml += `<div class="m-entry" title="${l.name}${suffix} - ${l.type}">
+            <span class="dot-inline" style="background:${c.dot}"></span>
+            <span class="m-entry-name">${l.name}${suffix}</span>
+          </div>`;
+        });
+        let moreHtml = '';
+        if(dayLeaves.length > maxShow){
+          moreHtml = `<div class="m-more">+ ${dayLeaves.length-maxShow} รายการ</div>`;
+        }
+
+        div.innerHTML = `<div class="m-num">${cell.date.getDate()}</div><div class="m-entries">${entriesHtml}${moreHtml}</div>`;
+        div.addEventListener('click', ()=> showDayDetail(iso));
+        grid.appendChild(div);
+      });
+
+      card.appendChild(grid);
+      row.appendChild(card);
+    }
+
+    function showDayDetail(iso){
+      selectedDayISO = iso;
+      const dayLeaves = leavesOnDate(iso);
+      const box = document.getElementById('day-detail');
+      const d = parseISO(iso);
+      
+      // ใช้วิธีดึงข้อมูลวันหยุดจากระบบคำนวณอัตโนมัติ
+      const holidayName = getHoliday(iso);
+      
+      document.getElementById('detail-title').textContent =
+        `วันที่ ${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear()+543}` +
+        (holidayName ? ` · ${holidayName}` : '');
+
+      const listEl = document.getElementById('detail-list');
+      if(dayLeaves.length === 0){
+        listEl.innerHTML = `<div class="empty-note">ไม่มีใครลาในวันนี้</div>`;
+      } else {
+        listEl.innerHTML = dayLeaves.map(l=>{
+          const c = PEOPLE[l.name] || {dot:'#999'};
+          return `<div class="detail-entry">
+            <span class="dot" style="background:${c.dot}"></span>
+            <div class="info"><strong>${l.name}</strong> · ${l.type} · ${l.period || 'เต็มวัน'}${l.note ? ' · '+escapeHtml(l.note) : ''}
+            <div style="color:#6E7A70;font-size:11.5px;">${l.start} ถึง ${l.end}</div></div>
+            <div class="actions">
+              <button class="edit" data-id="${l.id}" title="แก้ไข">✏️</button>
+              <button class="del" data-id="${l.id}" title="ลบ">✕</button>
+            </div>
+          </div>`;
+        }).join('');
+      }
+      box.style.display = 'block';
+
+      listEl.querySelectorAll('.edit').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const id = e.currentTarget.dataset.id;
+          startEditLeave(id);
+        });
+      });
+
+      listEl.querySelectorAll('.del').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const id = e.currentTarget.dataset.id;
+          leaves = leaves.filter(l => String(l.id) !== String(id));
+          renderMonths();
+          renderList();
+          showDayDetail(selectedDayISO);
+          saveLeaves();
+        });
+      });
+    }
+
+    function escapeHtml(str){
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    function renderList(){
+      const wrap = document.getElementById('list-wrap');
+      const todayStr = toISO(new Date()); 
+      
+      const activeLeaves = leaves.filter(l => l.end >= todayStr);
+
+      if(activeLeaves.length === 0){
+        wrap.innerHTML = `<div class="empty-note">ไม่มีข้อมูลประวัติวันลาในปัจจุบันและอนาคต (ประวัติในอดีตจะคงค้างอยู่บนปฏิทินเท่านั้น)</div>`;
+        return;
+      }
+      
+      const sorted = [...activeLeaves].sort((a,b)=> parseISO(a.start) - parseISO(b.start));
+      wrap.innerHTML = `<table>
+        <thead><tr><th>ชื่อ</th><th>ประเภท</th><th>ช่วงเวลา</th><th>วันที่ลา</th><th>หมายเหตุ</th><th>การจัดการ</th></tr></thead>
+        <tbody>
+          ${sorted.map(l=>{
+            const c = PEOPLE[l.name] || {dot:'#999'};
+            const dateDisplay = l.start === l.end 
+              ? formatThaiDate(l.start) 
+              : `${formatThaiDate(l.start)} – ${formatThaiDate(l.end)}`;
+              
+            return `<tr>
+              <td><span class="name-chip"><span class="dot" style="background:${c.dot}"></span>${l.name}</span></td>
+              <td>${l.type}</td>
+              <td>${l.period || 'เต็มวัน'}</td>
+              <td>${dateDisplay}</td>
+              <td>${l.note ? escapeHtml(l.note) : '-'}</td>
+              <td>
+                <button class="edit-row" data-id="${l.id}" title="แก้ไข">✏️</button>
+                <button class="del-row" data-id="${l.id}" title="ลบ">✕</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+
+      wrap.querySelectorAll('.edit-row').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const id = e.currentTarget.dataset.id;
+          startEditLeave(id);
+        });
+      });
+
+      wrap.querySelectorAll('.del-row').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          const id = e.currentTarget.dataset.id;
+          leaves = leaves.filter(l => String(l.id) !== String(id));
+          renderMonths();
+          renderList();
+          if(selectedDayISO) showDayDetail(selectedDayISO);
+          saveLeaves();
+        });
+      });
+    }
+
+    function startEditLeave(id){
+      const leave = leaves.find(l => String(l.id) === String(id));
+      if(!leave) return;
+
+      editingLeaveId = id;
+      
+      document.getElementById('form-title').textContent = 'แก้ไขข้อมูลวันลา';
+      document.getElementById('btn-save').textContent = 'บันทึกการแก้ไข';
+      document.getElementById('btn-cancel-edit').style.display = 'block';
+
+      document.querySelectorAll('#name-checks input').forEach(cb => {
+        cb.checked = (cb.value === leave.name);
+        cb.closest('.name-check').classList.toggle('checked', cb.checked);
+      });
+
+      if(leave.start === leave.end){
+        dateMode = 'single';
+        document.getElementById('f-single-date').value = leave.start;
+      } else {
+        dateMode = 'range';
+        document.getElementById('f-start').value = leave.start;
+        document.getElementById('f-end').value = leave.end;
+      }
+
+      document.querySelectorAll('.mode-tab').forEach(t=>t.classList.toggle('active', t.dataset.mode === dateMode));
+      document.getElementById('mode-single').classList.toggle('active', dateMode === 'single');
+      document.getElementById('mode-range').classList.toggle('active', dateMode === 'range');
+      document.getElementById('mode-multi').classList.toggle('active', dateMode === 'multi');
+
+      document.getElementById('f-type').value = leave.type;
+
+      const periodSel = document.getElementById('f-period');
+      const periodCustom = document.getElementById('f-period-custom');
+      if(['เต็มวัน', 'เช้า', 'บ่าย'].includes(leave.period)){
+        periodSel.value = leave.period;
+        periodCustom.style.display = 'none';
+        periodCustom.value = '';
+      } else {
+        periodSel.value = 'custom';
+        periodCustom.style.display = 'block';
+        periodCustom.value = leave.period;
+      }
+
+      document.getElementById('f-note').value = leave.note || '';
+      document.getElementById('form-panel').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit(){
+      editingLeaveId = null;
+      document.getElementById('form-title').textContent = 'เพิ่มวันลา';
+      document.getElementById('btn-save').textContent = 'บันทึกวันลา';
+      document.getElementById('btn-cancel-edit').style.display = 'none';
+
+      document.querySelectorAll('#name-checks input').forEach(cb=>{
+        cb.checked = false;
+        cb.closest('.name-check').classList.remove('checked');
+      });
+      document.getElementById('f-single-date').value = '';
+      document.getElementById('f-start').value = '';
+      document.getElementById('f-end').value = '';
+      document.getElementById('f-note').value = '';
+      document.getElementById('f-period').value = 'เต็มวัน';
+      document.getElementById('f-period-custom').value = '';
+      document.getElementById('f-period-custom').style.display = 'none';
+      document.getElementById('err').style.display = 'none';
+      multiDates = [];
+      renderDateChips();
+    }
+
+    document.getElementById('btn-cancel-edit').addEventListener('click', cancelEdit);
+
+    document.getElementById('btn-toggle-list').addEventListener('click', ()=>{
+      const wrap = document.getElementById('list-wrap');
+      const btn = document.getElementById('btn-toggle-list');
+      isListVisible = !isListVisible;
+      
+      if(isListVisible){
+        wrap.style.display = 'block';
+        btn.textContent = 'ซ่อน';
+      } else {
+        wrap.style.display = 'none';
+        btn.textContent = 'แสดง';
+      }
+    });
+
+    document.getElementById('btn-save').addEventListener('click', async ()=>{
+      const names = getSelectedNames();
+      const type = document.getElementById('f-type').value;
+      const note = document.getElementById('f-note').value.trim();
+      const errEl = document.getElementById('err');
+
+      const periodSel = document.getElementById('f-period').value;
+      const periodCustom = document.getElementById('f-period-custom').value.trim();
+      let period = periodSel === 'custom' ? periodCustom : periodSel;
+
+      if(names.length === 0){
+        errEl.textContent = 'กรุณาเลือกชื่อพนักงานอย่างน้อย 1 คน';
+        errEl.style.display = 'block';
+        return;
+      }
+      if(periodSel === 'custom' && !periodCustom){
+        errEl.textContent = 'กรุณาระบุกำหนดการช่วงเวลาเอง';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      let ranges = [];
+      let jumpDate = null;
+
+      if(dateMode === 'single'){
+        const d = document.getElementById('f-single-date').value;
+        if(!d){
+          errEl.textContent = 'กรุณาระบุวันที่ลา';
+          errEl.style.display = 'block';
+          return;
+        }
+        ranges = [{start:d, end:d}];
+        jumpDate = d;
+
+      } else if(dateMode === 'range'){
+        const start = document.getElementById('f-start').value;
+        const end = document.getElementById('f-end').value;
+        if(!start || !end){
+          errEl.textContent = 'กรุณากรอกวันที่เริ่มและวันที่สิ้นสุดการลา';
+          errEl.style.display = 'block';
+          return;
+        }
+        if(parseISO(start) > parseISO(end)){
+          errEl.textContent = 'วันที่สิ้นสุดต้องไม่เกิดขึ้นก่อนวันที่เริ่มการลา';
+          errEl.style.display = 'block';
+          return;
+        }
+        ranges = [{start, end}];
+        jumpDate = start;
+
+      } else if(dateMode === 'multi'){
+        if(multiDates.length === 0){
+          errEl.textContent = 'กรุณาเลือกและเพิ่มวันที่อย่างน้อย 1 วัน';
+          errEl.style.display = 'block';
+          return;
+        }
+        ranges = multiDates.map(d => ({start:d, end:d}));
+        jumpDate = multiDates[0];
+      }
+
+      errEl.style.display = 'none';
+
+      if(editingLeaveId){
+        const idx = leaves.findIndex(l => String(l.id) === String(editingLeaveId));
+        if(idx !== -1){
+          leaves[idx] = {
+            ...leaves[idx],
+            name: names[0],
+            start: ranges[0].start,
+            end: ranges[0].end,
+            type,
+            period,
+            note
+          };
+
+          if(names.length > 1){
+            for(let i=1; i<names.length; i++){
+              leaves.push({
+                id: Date.now() + Math.random().toString(16).slice(2) + '_' + i,
+                name: names[i],
+                start: ranges[0].start,
+                end: ranges[0].end,
+                type,
+                period,
+                note
+              });
+            }
+          }
+        }
+        editingLeaveId = null;
+        document.getElementById('form-title').textContent = 'เพิ่มวันลา';
+        document.getElementById('btn-save').textContent = 'บันทึกวันลา';
+        document.getElementById('btn-cancel-edit').style.display = 'none';
+
+      } else {
+        names.forEach(name=>{
+          ranges.forEach(r=>{
+            leaves.push({
+              id: Date.now() + Math.random().toString(16).slice(2),
+              name, start:r.start, end:r.end, type, period, note
+            });
+          });
+        });
+      }
+      
+      await saveLeaves();
+
+      document.querySelectorAll('#name-checks input').forEach(cb=>{
+        cb.checked = false;
+        cb.closest('.name-check').classList.remove('checked');
+      });
+      document.getElementById('f-single-date').value = '';
+      document.getElementById('f-start').value = '';
+      document.getElementById('f-end').value = '';
+      document.getElementById('f-note').value = '';
+      document.getElementById('f-period').value = 'เต็มวัน';
+      document.getElementById('f-period-custom').value = '';
+      document.getElementById('f-period-custom').style.display = 'none';
+      multiDates = [];
+      renderDateChips();
+
+      if(jumpDate){
+        viewDate = new Date(parseISO(jumpDate).getFullYear(), parseISO(jumpDate).getMonth(), 1);
+        renderMonths();
+        showDayDetail(jumpDate);
+      }
+      renderList();
+    });
+
+    document.getElementById('prev-month').addEventListener('click', ()=>{
+      viewDate.setMonth(viewDate.getMonth()-1);
+      renderMonths();
+    });
+    document.getElementById('next-month').addEventListener('click', ()=>{
+      viewDate.setMonth(viewDate.getMonth()+1);
+      renderMonths();
+    });
+    document.getElementById('today-btn').addEventListener('click', ()=>{
+      viewDate = new Date();
+      viewDate.setDate(1);
+      renderMonths();
+      showDayDetail(toISO(new Date()));
+    });
+
+    // ตรวจซิงก์ข้อมูลจากเซิร์ฟเวอร์แบบเงียบเบื้องหลัง
+    async function backgroundSync(){
+      if(!SHEET_WEB_APP_URL) return;
+      try{
+        const resp = await fetch(SHEET_WEB_APP_URL, { method: 'GET' });
+        if(resp.ok){
+          const rows = await parseSheetResponse(resp);
+          if(Array.isArray(rows)){
+            const newLeaves = rows.map(sheetRowToLeave);
+            
+            // ตรวจสอบว่ามีการเปลี่ยนแปลงข้อมูลจากเซิร์ฟเวอร์หรือไม่
+            const oldData = JSON.stringify(leaves);
+            const newData = JSON.stringify(newLeaves);
+            
+            if (oldData !== newData) {
+              leaves = newLeaves;
+              localStorage.setItem('leaves_backup', JSON.stringify(leaves));
+              renderMonths();
+              renderList();
+              if(selectedDayISO) showDayDetail(selectedDayISO);
+            }
+            setSyncBadge('ok', '');
+          }
+        }
+      }catch(e){
+        console.warn('การดึงข้อมูลพื้นหลังอัตโนมัติล้มเหลว (บราวเซอร์จะลองซิงก์ใหม่ในรอบถัดไป):', e);
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        backgroundSync();
+      }
+    });
+
+    (async function init(){
+      populateNameSelect();
+      setupModeTabs();
+      setupPeriodField();
+      renderDateChips();
+
+      // ดึงข้อมูลในเครื่องมาขึ้นก่อน จากนั้นเรียกเชื่อมข้อมูลจริงจาก Google Sheets
+      await loadLeaves();
+      renderMonths();
+      renderList();
+
+      // แสดงข้อมูลรายละเอียดการลาปัจจุบันเฉพาะวันปัจจุบันโดยอัตโนมัติ
+      showDayDetail(toISO(new Date()));
+
+      // สั่งเบื้องหลังทำงานรอบละ 3 วินาที
+      setInterval(backgroundSync, 3000);
+    })();
+    </script>
+
+    <!-- ==================== TAB 2: SCRIPTS (Duty Rotation & Shift Swap) ==================== -->
     <script>
         // ----------------- CONFIGURATION & CONSTANTS -----------------
         const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/10euYdImtO7uMZlVK5MSwkU5kJKkBBi3Phuv5c2fMyMI/edit?usp=sharing";
@@ -332,7 +2037,7 @@
             
             toastMessage.textContent = msg;
             if (isSuccess) {
-                toastIcon.className = "fa-solid fa-circle-check text-teal-400 text-sm";
+                toastIcon.className = "fa-solid fa-circle-check text-amber-400 text-sm";
             } else {
                 toastIcon.className = "fa-solid fa-triangle-exclamation text-rose-400 text-sm";
             }
@@ -912,8 +2617,8 @@
                 const cell = document.createElement("div");
                 cell.className = `min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative ${
                     dateStr === selectedDateStr 
-                        ? 'border-teal-600 ring-2 ring-teal-500/20 bg-teal-50/10 shadow-sm' 
-                        : 'border-slate-100 bg-white hover:border-teal-200 hover:shadow-md'
+                        ? 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/10 shadow-sm' 
+                        : 'border-slate-100 bg-white hover:border-amber-200 hover:shadow-md'
                 }`;
                 cell.onclick = () => selectDate(dateStr);
 
@@ -923,19 +2628,19 @@
                 const dayNum = document.createElement("span");
                 dayNum.className = `text-sm font-bold ${
                     result.isOff ? 'text-slate-400' : 'text-slate-700'
-                } ${dateStr === selectedDateStr ? 'text-teal-700' : ''}`;
+                } ${dateStr === selectedDateStr ? 'text-amber-700' : ''}`;
                 dayNum.textContent = day;
                 header.appendChild(dayNum);
 
                 if (result.isOff) {
-                    const statusBadge = document.createElement("span");
-                    statusBadge.className = "text-[9px] px-1.5 py-0.5 rounded font-medium truncate max-w-[70px] " + 
-                        (result.reason.includes("วันหยุดราชการ") || result.reason.includes("นักขัตฤกษ์") 
-                            ? 'bg-rose-50 text-rose-600 border border-rose-100' 
-                            : 'bg-slate-100 text-slate-400');
-                    statusBadge.textContent = result.reason.includes("นักขัตฤกษ์") ? "วันหยุดพิเศษ" : "OFF";
+                    // "OFF" badge hidden for normal weekends; only show for official holidays
                     if (result.reason.includes("วันหยุดราชการ")) holidayCount++;
-                    header.appendChild(statusBadge);
+                    if (result.reason.includes("วันหยุดราชการ") || result.reason.includes("นักขัตฤกษ์")) {
+                        const statusBadge = document.createElement("span");
+                        statusBadge.className = "text-[9px] px-1.5 py-0.5 rounded font-semibold truncate max-w-[70px] bg-rose-50 text-rose-600 border border-rose-100";
+                        statusBadge.textContent = "วันหยุด";
+                        header.appendChild(statusBadge);
+                    }
                 } else {
                     if (result.staffMappingInfo.inherited) {
                         const inheritBadge = document.createElement("span");
@@ -947,7 +2652,7 @@
 
                     if (result.arvInfo.isARV) {
                         const arvBadge = document.createElement("span");
-                        arvBadge.className = "text-[8px] bg-violet-100 text-violet-700 font-bold px-1.5 py-0.5 rounded-full"
+                        arvBadge.className = "text-[8px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full"
                         arvBadge.textContent = "ARV";
                         header.appendChild(arvBadge);
                     }
@@ -1024,14 +2729,14 @@
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-slate-700 text-xs sm:text-sm flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                             ${name}
                         </span>
                         <span class="font-extrabold text-slate-900 text-xs sm:text-sm">${count} เวร</span>
                     </div>
                     <div class="space-y-1">
                         <div class="w-full bg-slate-200/80 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-gradient-to-r from-teal-500 to-cyan-500 h-full rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                            <div class="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
                         </div>
                     </div>
                 `;
@@ -1133,7 +2838,7 @@
                 const row = document.createElement("div");
                 row.className = `flex justify-between items-center p-3 rounded-xl border ${
                     isArvSpec 
-                        ? 'bg-violet-50/70 border-violet-100 text-violet-900' 
+                        ? 'bg-amber-50/40 border-amber-100 text-amber-900' 
                         : isReplaced 
                             ? 'bg-emerald-50/40 border-emerald-100 text-slate-700' 
                             : 'bg-white border-slate-100 text-slate-700'
@@ -1142,7 +2847,7 @@
                 const roleBadge = document.createElement("span");
                 roleBadge.className = `text-xs font-extrabold uppercase px-2.5 py-1 rounded-lg ${
                     isArvSpec 
-                        ? 'bg-violet-200 text-violet-800' 
+                        ? 'bg-amber-100 text-amber-800' 
                         : isReplaced 
                             ? 'bg-emerald-100 text-emerald-800' 
                             : 'bg-slate-100 text-slate-700'
@@ -1155,7 +2860,7 @@
                 if (isReplaced) {
                     personName.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i> ${person}`;
                 } else if (isArvSpec) {
-                    personName.innerHTML = `<i class="fa-solid fa-star text-violet-500 text-xs animate-pulse"></i> ${person}`;
+                    personName.innerHTML = `<i class="fa-solid fa-star text-amber-500 text-xs animate-pulse"></i> ${person}`;
                 } else {
                     personName.textContent = person;
                 }
@@ -1177,7 +2882,7 @@
                 result.replacementLogs.forEach(log => {
                     const logRow = document.createElement("div");
                     logRow.className = "flex items-start gap-1.5 text-slate-600";
-                    logRow.innerHTML = `<i class="fa-solid fa-circle-info text-teal-500 mt-1 shrink-0"></i> <span>${log}</span>`;
+                    logRow.innerHTML = `<i class="fa-solid fa-circle-info text-amber-500 mt-1 shrink-0"></i> <span>${log}</span>`;
                     logsContainer.appendChild(logRow);
                 });
             }
@@ -1193,9 +2898,9 @@
                 if (cell.classList.contains("bg-slate-50")) continue;
 
                 if (i === targetIndex) {
-                    cell.className = "min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative border-teal-600 ring-2 ring-teal-500/20 bg-teal-50/10 shadow-sm";
+                    cell.className = "min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/10 shadow-sm";
                 } else {
-                    cell.className = "min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative border-slate-100 bg-white hover:border-teal-200 hover:shadow-md";
+                    cell.className = "min-h-[95px] border rounded-2xl p-2.5 transition-all cursor-pointer flex flex-col justify-between group relative border-slate-100 bg-white hover:border-amber-200 hover:shadow-md";
                 }
             }
         }
